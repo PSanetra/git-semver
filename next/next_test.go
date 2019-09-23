@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-func TestTagNameToVersionShouldReturnVersionIfProjectNameMatches(t *testing.T) {
-	version := tagNameToVersion("myProject@v1.2.3", "myProject", false)
+func Test_tagNameToVersion_should_return_version(t *testing.T) {
+	version := tagNameToVersion("1.2.3")
 
 	assert.Equal(
 		t,
@@ -21,26 +21,8 @@ func TestTagNameToVersionShouldReturnVersionIfProjectNameMatches(t *testing.T) {
 	)
 }
 
-func TestTagNameToVersionShouldReturnNilIfVersionIsForOtherProject(t *testing.T) {
-	version := tagNameToVersion("myProject@v1.2.3", "myOtherProject", false)
-
-	assert.Nil(t, version)
-}
-
-func TestTagNameToVersionShouldReturnNilIfTagContainsProjectNameAndProjectNameIsEmpty(t *testing.T) {
-	version := tagNameToVersion("myProject@v1.2.3", "", false)
-
-	assert.Nil(t, version)
-}
-
-func TestTagNameToVersionShouldReturnNilIfVersionIsForMainProjectAndProjectIsNotMainProject(t *testing.T) {
-	version := tagNameToVersion("v1.2.3", "myOtherProject", false)
-
-	assert.Nil(t, version)
-}
-
-func TestTagNameToVersionShouldReturnVersionIfTagContainsNoProjectNameAndProjectIsMainProject(t *testing.T) {
-	version := tagNameToVersion("v1.2.3", "myMainProject", true)
+func Test_tagNameToVersion_should_return_version_if_tag_has_v_prefix(t *testing.T) {
+	version := tagNameToVersion("v1.2.3")
 
 	assert.Equal(
 		t,
