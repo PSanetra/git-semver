@@ -25,7 +25,7 @@ tc_exec git checkout master
 tc_exec touch src/c.go
 tc_exec git add -A
 tc_exec git commit -m "feat: More features"
-tc_exec git tag -a "v$(tc_exec git semver next)" -m "release tag"
+tc_exec git tag "v$(tc_exec git semver next)"
 tc_exec git merge test_branch --no-edit
 tc_pretty_git_log
 

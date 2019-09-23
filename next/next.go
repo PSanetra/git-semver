@@ -8,7 +8,6 @@ import (
 	"github.com/psanetra/git-semver/semver"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/plumbing/revlist"
 	"io"
 )
@@ -54,7 +53,7 @@ func Next(options NextOptions) (*semver.Version, error) {
 	excludedCommits := make([]plumbing.Hash, 0, 1)
 
 	if latestReleaseVersionTag != nil {
-		excludedCommits = append(excludedCommits, latestReleaseVersionTag.Target)
+		excludedCommits = append(excludedCommits, latestReleaseVersionTag.Hash())
 	}
 
 	// historyDiff also contains other hashes than commit hashes (e.g. blob or tree hashes)
@@ -138,7 +137,7 @@ func commitMessageToSemverChange(msg *conventional_commits.CommitMessage) semver
 }
 
 
-func findLatestVersion(repo *git.Repository, preRelease bool) (*semver.Version, *object.Tag, error) {
+func findLatestVersion(repo *git.Repository, preRelease bool) (*semver.Version, *plumbing.Reference, error) {
 	latestVersionTag, err := findLatestVersionTag(repo, preRelease)
 
 	if err != nil {
@@ -158,15 +157,15 @@ func findLatestVersion(repo *git.Repository, preRelease bool) (*semver.Version, 
 			Patch: 0,
 		}
 	} else {
-		latestVersion = tagNameToVersion(latestVersionTag.Name)
+		latestVersion = tagNameToVersion(latestVersionTag.Name().Short())
 	}
 
 	return latestVersion, latestVersionTag, nil
 }
 
-func findLatestVersionTag(repo *git.Repository, includePreReleases bool) (*object.Tag, error) {
+func findLatestVersionTag(repo *git.Repository, includePreReleases bool) (*plumbing.Reference, error) {
 
-	tagIter, err := repo.TagObjects()
+	tagIter, err := repo.Tags()
 
 	if err != nil {
 		return nil, err
@@ -174,7 +173,7 @@ func findLatestVersionTag(repo *git.Repository, includePreReleases bool) (*objec
 
 	defer tagIter.Close()
 
-	var maxVersionTag *object.Tag
+	var maxVersionTag *plumbing.Reference
 	var maxVersion = &semver.Version{
 		Major: 0,
 		Minor: 0,
@@ -186,7 +185,7 @@ func findLatestVersionTag(repo *git.Repository, includePreReleases bool) (*objec
 			return nil, err
 		}
 
-		version := tagNameToVersion(tag.Name)
+		version := tagNameToVersion(tag.Name().Short())
 
 		if version == nil || !includePreReleases && len(version.PreReleaseTag) > 0 {
 			continue
@@ -220,7 +219,9 @@ func findLatestVersionTag(repo *git.Repository, includePreReleases bool) (*objec
 		return nil, err
 	}
 
-	if !git_utils.HashListContains(headRefList, maxVersionTag) {
+	maxVersionCommitHash := git_utils.RefToCommitHash(repo.Storer, maxVersionTag)
+
+	if !git_utils.HashListContains(headRefList, maxVersionCommitHash) {
 		return nil, errors.New("latest version tag is not on current branch")
 	}
 

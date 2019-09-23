@@ -2,13 +2,12 @@ package git_utils
 
 import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
-func HashListContains(hashList []plumbing.Hash, tag *object.Tag) bool {
+func HashListContains(hashList []plumbing.Hash, hash plumbing.Hash) bool {
 
-	for _, hash := range hashList {
-		if hash == tag.Target {
+	for _, h := range hashList {
+		if h == hash {
 			return true
 		}
 	}
