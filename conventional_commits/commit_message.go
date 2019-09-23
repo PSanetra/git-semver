@@ -80,7 +80,7 @@ func (c *CommitMessage) Compare(other *CommitMessage) int {
 		if other.ChangeType == FIX {
 			return 0
 		} else {
-			return -1
+			return 1
 		}
 	} else if other.ChangeType == FIX {
 		return -1
