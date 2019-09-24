@@ -24,6 +24,18 @@ $ git-semver next --pre-release-tag=alpha --pre-release-counter
 1.2.3-alpha.1
 ```
 
+Print latest semantic version (excluding pre-releases)
+```bash
+$ git-semver latest
+1.2.3
+```
+
+Print latest semantic version including pre-releases
+```bash
+$ git-semver latest --include-pre-releases
+1.2.3-beta
+```
+
 ## License
 
 MIT

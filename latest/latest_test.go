@@ -1,4 +1,4 @@
-package next
+package latest
 
 import (
 	"github.com/psanetra/git-semver/semver"
