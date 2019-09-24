@@ -72,7 +72,7 @@ func parsePreReleaseTag(str string) ([]interface{}, error) {
 
 	parts := strings.Split(str, ".")
 
-	preReleaseTag := make([]interface{}, 0, len(parts) + 1)
+	preReleaseTag := make([]interface{}, 0, len(parts)+1)
 
 	for _, part := range parts {
 
@@ -82,7 +82,7 @@ func parsePreReleaseTag(str string) ([]interface{}, error) {
 			numErr, ok := err.(*strconv.NumError)
 
 			if !ok || numErr.Err != strconv.ErrSyntax {
-				return nil, errors.WithMessage(err, "Could not parse part '" + part + "' as int64")
+				return nil, errors.WithMessage(err, "Could not parse part '"+part+"' as int64")
 			}
 
 			preReleaseTag = append(preReleaseTag, part)

@@ -22,8 +22,8 @@ var Command = cobra.Command{
 
 		nextVersion, err := next.Next(next.NextOptions{
 			Workdir: common_opts.Workdir,
-			Stable:      stable,
-			PreReleaseOptions: semver.PreReleaseOptions {
+			Stable:  stable,
+			PreReleaseOptions: semver.PreReleaseOptions{
 				Label:         preReleaseTag,
 				AppendCounter: appendPreReleaseCounter,
 			},

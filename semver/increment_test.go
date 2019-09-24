@@ -23,9 +23,9 @@ func TestIncrementShouldSetMajorVersionTo1IfVersionShouldBeStableEvenIfThereWasN
 	assert.Equal(
 		t,
 		Version{
-			Major: 1,
-			Minor: 0,
-			Patch: 0,
+			Major:         1,
+			Minor:         0,
+			Patch:         0,
 			PreReleaseTag: []interface{}{},
 		},
 		newVersion,
@@ -51,9 +51,9 @@ func TestIncrementShouldIncrementMajorVersionOnBreakingChange(t *testing.T) {
 	assert.Equal(
 		t,
 		Version{
-			Major: 2,
-			Minor: 0,
-			Patch: 0,
+			Major:         2,
+			Minor:         0,
+			Patch:         0,
 			PreReleaseTag: []interface{}{},
 		},
 		newVersion,
@@ -79,9 +79,9 @@ func TestIncrementShouldIncrementMinorVersionOnBreakingChangeIfVersionShouldBeUn
 	assert.Equal(
 		t,
 		Version{
-			Major: 0,
-			Minor: 2,
-			Patch: 0,
+			Major:         0,
+			Minor:         2,
+			Patch:         0,
 			PreReleaseTag: []interface{}{},
 		},
 		newVersion,
@@ -123,9 +123,9 @@ func TestIncrementShouldIncrementMinorVersionOnNewFeature(t *testing.T) {
 	assert.Equal(
 		t,
 		Version{
-			Major: 1,
-			Minor: 2,
-			Patch: 0,
+			Major:         1,
+			Minor:         2,
+			Patch:         0,
 			PreReleaseTag: []interface{}{},
 		},
 		newVersion,
@@ -151,9 +151,9 @@ func TestIncrementShouldIncrementPatchVersionOnFix(t *testing.T) {
 	assert.Equal(
 		t,
 		Version{
-			Major: 1,
-			Minor: 1,
-			Patch: 2,
+			Major:         1,
+			Minor:         1,
+			Patch:         2,
 			PreReleaseTag: []interface{}{},
 		},
 		newVersion,
@@ -177,7 +177,7 @@ func TestIncrementShouldIncrementVersionAndApplyLabelOnPreRelease(t *testing.T) 
 	assert.Equal(
 		t,
 		Version{
-			Major: 1,
+			Major:         1,
 			PreReleaseTag: []interface{}{"alpha", "2018-12-31"},
 		},
 		newVersion,
@@ -193,7 +193,7 @@ func TestIncrementShouldIncrementVersionAndApplyLabelAndAppendCounterOnPreReleas
 		true,
 		BREAKING,
 		&PreReleaseOptions{
-			Label: "alpha.2018-12-31",
+			Label:         "alpha.2018-12-31",
 			AppendCounter: true,
 		},
 	)
@@ -202,7 +202,7 @@ func TestIncrementShouldIncrementVersionAndApplyLabelAndAppendCounterOnPreReleas
 	assert.Equal(
 		t,
 		Version{
-			Major: 1,
+			Major:         1,
 			PreReleaseTag: []interface{}{"alpha", "2018-12-31", int64(1)},
 		},
 		newVersion,
@@ -215,13 +215,13 @@ func TestIncrementShouldIncrementVersionAndApplyLabelAndIncrementCounterOnExisti
 	newVersion, err := Increment(
 		Version{},
 		&Version{
-			Major: 1,
+			Major:         1,
 			PreReleaseTag: []interface{}{"alpha", "2018-12-31", int64(99)},
 		},
 		true,
 		BREAKING,
 		&PreReleaseOptions{
-			Label: "alpha.2018-12-31",
+			Label:         "alpha.2018-12-31",
 			AppendCounter: true,
 		},
 	)
@@ -230,7 +230,7 @@ func TestIncrementShouldIncrementVersionAndApplyLabelAndIncrementCounterOnExisti
 	assert.Equal(
 		t,
 		Version{
-			Major: 1,
+			Major:         1,
 			PreReleaseTag: []interface{}{"alpha", "2018-12-31", int64(100)},
 		},
 		newVersion,
@@ -243,13 +243,13 @@ func TestIncrementShouldCompareLengthsOfPreReleaseTagsIfExistingPreReleaseTagIsL
 	newVersion, err := Increment(
 		Version{},
 		&Version{
-			Major: 1,
+			Major:         1,
 			PreReleaseTag: []interface{}{"alpha", int64(1), int64(1)},
 		},
 		true,
 		BREAKING,
 		&PreReleaseOptions{
-			Label: "alpha",
+			Label:         "alpha",
 			AppendCounter: true,
 		},
 	)
@@ -258,7 +258,7 @@ func TestIncrementShouldCompareLengthsOfPreReleaseTagsIfExistingPreReleaseTagIsL
 	assert.Equal(
 		t,
 		Version{
-			Major: 1,
+			Major:         1,
 			PreReleaseTag: []interface{}{"alpha", int64(1)},
 		},
 		newVersion,
@@ -271,13 +271,13 @@ func TestIncrementShouldCompareLengthsOfPreReleaseTagsIfExistingPreReleaseTagIsS
 	newVersion, err := Increment(
 		Version{},
 		&Version{
-			Major: 1,
+			Major:         1,
 			PreReleaseTag: []interface{}{"alpha", int64(1)},
 		},
 		true,
 		BREAKING,
 		&PreReleaseOptions{
-			Label: "alpha.1",
+			Label:         "alpha.1",
 			AppendCounter: true,
 		},
 	)
@@ -286,7 +286,7 @@ func TestIncrementShouldCompareLengthsOfPreReleaseTagsIfExistingPreReleaseTagIsS
 	assert.Equal(
 		t,
 		Version{
-			Major: 1,
+			Major:         1,
 			PreReleaseTag: []interface{}{"alpha", int64(1), int64(1)},
 		},
 		newVersion,
@@ -299,13 +299,13 @@ func TestIncrementShouldIncrementVersionAndIgnoreExistingPreReleaseIfPreReleaseT
 	newVersion, err := Increment(
 		Version{},
 		&Version{
-			Major: 1,
+			Major:         1,
 			PreReleaseTag: []interface{}{"alpha", "2018-12-31", int64(99)},
 		},
 		true,
 		BREAKING,
 		&PreReleaseOptions{
-			Label: "alpha.2019-01-01",
+			Label:         "alpha.2019-01-01",
 			AppendCounter: true,
 		},
 	)
@@ -314,7 +314,7 @@ func TestIncrementShouldIncrementVersionAndIgnoreExistingPreReleaseIfPreReleaseT
 	assert.Equal(
 		t,
 		Version{
-			Major: 1,
+			Major:         1,
 			PreReleaseTag: []interface{}{"alpha", "2019-01-01", int64(1)},
 		},
 		newVersion,
@@ -327,15 +327,15 @@ func TestIncrementShouldIncrementVersionAndIgnoreExistingPreReleaseIfExistingPre
 	newVersion, err := Increment(
 		Version{},
 		&Version{
-			Major: 0,
-			Minor: 1,
-			Patch: 0,
+			Major:         0,
+			Minor:         1,
+			Patch:         0,
 			PreReleaseTag: []interface{}{"alpha", "2018-12-31", int64(99)},
 		},
 		true,
 		BREAKING,
 		&PreReleaseOptions{
-			Label: "alpha.2018-12-31",
+			Label:         "alpha.2018-12-31",
 			AppendCounter: true,
 		},
 	)
@@ -344,9 +344,9 @@ func TestIncrementShouldIncrementVersionAndIgnoreExistingPreReleaseIfExistingPre
 	assert.Equal(
 		t,
 		Version{
-			Major: 1,
-			Minor: 0,
-			Patch: 0,
+			Major:         1,
+			Minor:         0,
+			Patch:         0,
 			PreReleaseTag: []interface{}{"alpha", "2018-12-31", int64(1)},
 		},
 		newVersion,
@@ -359,15 +359,15 @@ func TestIncrementShouldIncrementVersionAndIgnoreExistingPreReleaseIfExistingPre
 	newVersion, err := Increment(
 		Version{},
 		&Version{
-			Major: 0,
-			Minor: 0,
-			Patch: 1,
+			Major:         0,
+			Minor:         0,
+			Patch:         1,
 			PreReleaseTag: []interface{}{"alpha", "2018-12-31", int64(99)},
 		},
 		false,
 		NEW_FEATURE,
 		&PreReleaseOptions{
-			Label: "alpha.2018-12-31",
+			Label:         "alpha.2018-12-31",
 			AppendCounter: true,
 		},
 	)
@@ -376,9 +376,9 @@ func TestIncrementShouldIncrementVersionAndIgnoreExistingPreReleaseIfExistingPre
 	assert.Equal(
 		t,
 		Version{
-			Major: 0,
-			Minor: 1,
-			Patch: 0,
+			Major:         0,
+			Minor:         1,
+			Patch:         0,
 			PreReleaseTag: []interface{}{"alpha", "2018-12-31", int64(1)},
 		},
 		newVersion,
@@ -391,15 +391,15 @@ func TestIncrementShouldIncrementVersionAndIgnoreExistingPreReleaseIfExistingPre
 	newVersion, err := Increment(
 		Version{},
 		&Version{
-			Major: 0,
-			Minor: 0,
-			Patch: 0,
+			Major:         0,
+			Minor:         0,
+			Patch:         0,
 			PreReleaseTag: []interface{}{"alpha", "2018-12-31", int64(99)},
 		},
 		false,
 		FIX,
 		&PreReleaseOptions{
-			Label: "alpha.2018-12-31",
+			Label:         "alpha.2018-12-31",
 			AppendCounter: true,
 		},
 	)
@@ -408,9 +408,9 @@ func TestIncrementShouldIncrementVersionAndIgnoreExistingPreReleaseIfExistingPre
 	assert.Equal(
 		t,
 		Version{
-			Major: 0,
-			Minor: 0,
-			Patch: 1,
+			Major:         0,
+			Minor:         0,
+			Patch:         1,
 			PreReleaseTag: []interface{}{"alpha", "2018-12-31", int64(1)},
 		},
 		newVersion,

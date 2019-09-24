@@ -433,7 +433,6 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_not_feature_but_right_
 
 }
 
-
 func TestCommitMessage_Compare_should_return_0_if_left_is_fix_and_right_too(t *testing.T) {
 
 	assert.Equal(

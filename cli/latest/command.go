@@ -16,7 +16,7 @@ var Command = cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		nextVersion, err := latest.Latest(latest.LatestOptions{
-			Workdir: common_opts.Workdir,
+			Workdir:            common_opts.Workdir,
 			IncludePreReleases: includePreReleases,
 		})
 

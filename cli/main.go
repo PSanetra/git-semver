@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/psanetra/git-semver/cli/common_opts"
-	"github.com/psanetra/git-semver/cli/next"
 	"github.com/psanetra/git-semver/cli/latest"
+	"github.com/psanetra/git-semver/cli/next"
 	"github.com/psanetra/git-semver/logger"
 	"github.com/spf13/cobra"
 )

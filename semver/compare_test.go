@@ -234,8 +234,7 @@ func TestCompareVersionsLongerPreReleaseTagsHaveHigherPrecedence(t *testing.T) {
 			1,
 			1,
 			1,
-			[]interface{}{
-			},
+			[]interface{}{},
 		},
 		&Version{
 			1,
@@ -262,8 +261,7 @@ func TestCompareVersionsLongerPreReleaseTagsHaveHigherPrecedence(t *testing.T) {
 			1,
 			1,
 			1,
-			[]interface{}{
-			},
+			[]interface{}{},
 		},
 	)
 

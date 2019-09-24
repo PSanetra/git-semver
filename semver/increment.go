@@ -13,7 +13,7 @@ const (
 )
 
 type PreReleaseOptions struct {
-	Label string
+	Label         string
 	AppendCounter bool
 }
 
@@ -114,12 +114,12 @@ func preReleaseTagsWithCounterAreSimilar(tag1 []interface{}, tag2 []interface{})
 		}
 	}
 
-	_, t1eIsInt64 := tag1[len(tag1) - 1].(int64)
-	_, t2eIsInt64 := tag2[len(tag1) - 1].(int64)
+	_, t1eIsInt64 := tag1[len(tag1)-1].(int64)
+	_, t2eIsInt64 := tag2[len(tag1)-1].(int64)
 	return t1eIsInt64 && t2eIsInt64
 }
 
-func incrementPreReleaseTagCounter(tag []interface{}) ([]interface{}) {
+func incrementPreReleaseTagCounter(tag []interface{}) []interface{} {
 	newTag := make([]interface{}, 0, len(tag))
 	newTag = append(newTag, tag...)
 
