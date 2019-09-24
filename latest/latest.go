@@ -117,7 +117,7 @@ func findLatestVersionTag(repo *git.Repository, includePreReleases bool) (*plumb
 	maxVersionCommitHash := git_utils.RefToCommitHash(repo.Storer, maxVersionTag)
 
 	if !git_utils.HashListContains(headRefList, maxVersionCommitHash) {
-		return nil, errors.New("latest version tag is not on current branch")
+		return nil, errors.Errorf("latest version tag (%s on %s) is not on current branch", maxVersionTag.Name().String(), maxVersionCommitHash.String())
 	}
 
 	return maxVersionTag, nil
