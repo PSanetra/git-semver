@@ -1,4 +1,6 @@
 # git-semver
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FPSanetra%2Fgit-semver.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FPSanetra%2Fgit-semver?ref=badge_shield)
+
 
 git-semver is a command line tool to calculate semantic versions based on the git history and tags of a repository.
 
@@ -39,3 +41,6 @@ $ git-semver latest --include-pre-releases
 ## License
 
 MIT
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FPSanetra%2Fgit-semver.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FPSanetra%2Fgit-semver?ref=badge_large)
