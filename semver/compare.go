@@ -37,6 +37,14 @@ func CompareVersions(v1 *Version, v2 *Version) int {
 		}
 	}
 
+	if len(v1.PreReleaseTag) == len(v2.PreReleaseTag) {
+		return 0
+	} else if len(v1.PreReleaseTag) == 0 {
+		return 1
+	} else if len(v2.PreReleaseTag) == 0 {
+		return -1
+	}
+
 	return len(v1.PreReleaseTag) - len(v2.PreReleaseTag)
 }
 

@@ -226,8 +226,7 @@ func TestCompareVersionsReturnsLessThan0IfV2HasPreReleaseTagWithHigherPrecedence
 
 }
 
-// https://semver.org/#spec-item-11
-func TestCompareVersionsLongerPreReleaseTagsHaveHigherPrecedence(t *testing.T) {
+func TestCompareVersionsReleaseVersionsHaveHigherPrecedenceThanPreReleaseVersions(t *testing.T) {
 
 	result := CompareVersions(
 		&Version{
@@ -246,7 +245,7 @@ func TestCompareVersionsLongerPreReleaseTagsHaveHigherPrecedence(t *testing.T) {
 		},
 	)
 
-	assert.True(t, result < 0)
+	assert.Equal(t, 1, result)
 
 	result = CompareVersions(
 		&Version{
@@ -265,7 +264,56 @@ func TestCompareVersionsLongerPreReleaseTagsHaveHigherPrecedence(t *testing.T) {
 		},
 	)
 
-	assert.True(t, result > 0)
+	assert.Equal(t, -1, result)
+
+}
+
+// https://semver.org/#spec-item-11
+func TestCompareVersionsLongerPreReleaseTagsHaveHigherPrecedence(t *testing.T) {
+
+	result := CompareVersions(
+		&Version{
+			1,
+			1,
+			1,
+			[]interface{}{
+				"alpha",
+			},
+		},
+		&Version{
+			1,
+			1,
+			1,
+			[]interface{}{
+				"alpha",
+				1,
+			},
+		},
+	)
+
+	assert.Equal(t, -1, result)
+
+	result = CompareVersions(
+		&Version{
+			1,
+			1,
+			1,
+			[]interface{}{
+				"alpha",
+				1,
+			},
+		},
+		&Version{
+			1,
+			1,
+			1,
+			[]interface{}{
+				"alpha",
+			},
+		},
+	)
+
+	assert.Equal(t, 1, result)
 
 }
 
