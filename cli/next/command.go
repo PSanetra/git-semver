@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var projectName string
 var stable bool
 var preReleaseTag string
 var appendPreReleaseCounter bool
@@ -17,7 +16,7 @@ var appendPreReleaseCounter bool
 var Command = cobra.Command{
 	Use:   "next",
 	Short: "prints version which should be used for the next release",
-	Long:  "prints version which should be used for the next release according to commit message conventions and touched files",
+	Long:  `This command can be used to calculate the next semantic version based on the history of the current branch. It fails if the git tag of the latest semantic version is not reachable on the current branch or if the tagged commit is not reachable because the repository is shallow.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		nextVersion, err := next.Next(next.NextOptions{

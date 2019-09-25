@@ -12,7 +12,8 @@ var includePreReleases bool
 
 var Command = cobra.Command{
 	Use:   "latest",
-	Short: "Prints latest semantic version",
+	Short: "prints latest semantic version",
+	Long:  `This command prints the latest semantic version in the current repository by comparing all git tags. Tag names may have a "v" prefix, but this commands prints the version always without that prefix.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		nextVersion, err := latest.Latest(latest.LatestOptions{

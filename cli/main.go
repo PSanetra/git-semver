@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/psanetra/git-semver/cli/common_opts"
+	"github.com/psanetra/git-semver/cli/compare"
 	"github.com/psanetra/git-semver/cli/latest"
 	"github.com/psanetra/git-semver/cli/next"
 	"github.com/psanetra/git-semver/logger"
@@ -27,6 +28,7 @@ func main() {
 
 	rootCmd.AddCommand(&latest.Command)
 	rootCmd.AddCommand(&next.Command)
+	rootCmd.AddCommand(&compare.Command)
 	err := rootCmd.Execute()
 
 	if err != nil {
