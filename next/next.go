@@ -65,7 +65,15 @@ func Next(options NextOptions) (*semver.Version, error) {
 	)
 
 	if err != nil {
-		return nil, errors.WithMessage(err, "Could not find commits since latest version (" + latestReleaseVersionTag.Name().Short() + ", " + latestReleaseVersionTag.Hash().String() + ")")
+		objectInfo := " (HEAD: " + headRef.Hash().String()
+
+		if latestReleaseVersionTag != nil {
+			objectInfo = ", Latest Version: {" + latestReleaseVersionTag.Name().Short() + ", " + latestReleaseVersionTag.Hash().String() + "}"
+		}
+
+		objectInfo += ")"
+
+		return nil, errors.WithMessage(err, "Could not find commits since latest version"+objectInfo)
 	}
 
 	var nextVersion semver.Version
