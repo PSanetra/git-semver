@@ -39,6 +39,10 @@ func Next(options NextOptions) (*semver.Version, error) {
 		return nil, errors.WithMessage(err, "Error while trying to find latest release version tag")
 	}
 
+	if latestReleaseVersion == nil {
+		latestReleaseVersion = &semver.EmptyVersion
+	}
+
 	var latestPreReleaseVersion *semver.Version
 
 	if options.PreReleaseOptions.ShouldBePreRelease() {

@@ -13,6 +13,8 @@ var VersionRegex = regexp.MustCompile("^v?(?P<Major>0|[1-9]\\d*)\\.(?P<Minor>0|[
 
 var VersionParsingError = errors.New("Could not parse version")
 
+var EmptyVersion = Version{}
+
 type Version struct {
 	Major int
 	Minor int

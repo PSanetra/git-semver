@@ -28,6 +28,10 @@ func Latest(options LatestOptions) (*semver.Version, error) {
 
 	latestReleaseVersion, _, err := FindLatestVersion(repo, options.IncludePreReleases)
 
+	if latestReleaseVersion == nil {
+		latestReleaseVersion = &semver.EmptyVersion
+	}
+
 	return latestReleaseVersion, err
 
 }
@@ -39,23 +43,11 @@ func FindLatestVersion(repo *git.Repository, preRelease bool) (*semver.Version, 
 		return nil, nil, err
 	}
 
-	var latestVersion *semver.Version
-
-	if preRelease && latestVersionTag == nil {
+	if latestVersionTag == nil {
 		return nil, nil, nil
 	}
 
-	if latestVersionTag == nil {
-		latestVersion = &semver.Version{
-			Major: 0,
-			Minor: 0,
-			Patch: 0,
-		}
-	} else {
-		latestVersion = tagNameToVersion(latestVersionTag.Name().Short())
-	}
-
-	return latestVersion, latestVersionTag, nil
+	return tagNameToVersion(latestVersionTag.Name().Short()), latestVersionTag, nil
 }
 
 func findLatestVersionTag(repo *git.Repository, includePreReleases bool) (*plumbing.Reference, error) {
@@ -69,11 +61,7 @@ func findLatestVersionTag(repo *git.Repository, includePreReleases bool) (*plumb
 	defer tagIter.Close()
 
 	var maxVersionTag *plumbing.Reference
-	var maxVersion = &semver.Version{
-		Major: 0,
-		Minor: 0,
-		Patch: 0,
-	}
+	var maxVersion = &semver.EmptyVersion
 
 	for tag, err := tagIter.Next(); err != io.EOF; tag, err = tagIter.Next() {
 		if err != nil {
