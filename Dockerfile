@@ -8,7 +8,7 @@ RUN go test -v -vet=off ./...
 
 RUN GOOS=linux GARCH=amd64 go build -o git-semver -ldflags="-s -w" cli/main.go
 
-FROM alpine:3.10
+FROM alpine:3.11
 
 RUN apk --no-cache add git openssh-client
 

@@ -10,6 +10,7 @@ import (
 )
 
 var stable bool
+var majorVersionFilter int
 var preReleaseTag string
 var appendPreReleaseCounter bool
 
@@ -22,6 +23,7 @@ var Command = cobra.Command{
 		nextVersion, err := next.Next(next.NextOptions{
 			Workdir: common_opts.Workdir,
 			Stable:  stable,
+			MajorVersionFilter: majorVersionFilter,
 			PreReleaseOptions: semver.PreReleaseOptions{
 				Label:         preReleaseTag,
 				AppendCounter: appendPreReleaseCounter,
@@ -39,6 +41,7 @@ var Command = cobra.Command{
 
 func init() {
 	Command.Flags().BoolVar(&stable, "stable", true, "Specifies if this project is considered stable. Setting this to false will cause the major version to be 0. This command will fail if there is already a major version greater than 0.")
+	Command.Flags().IntVar(&majorVersionFilter, "major-version", -1, "Only consider tags with this specific major version.")
 	Command.Flags().StringVar(&preReleaseTag, "pre-release-tag", "", "Specifies a pre-release tag which should be appended to the next version.")
 	Command.Flags().BoolVar(&appendPreReleaseCounter, "pre-release-counter", false, "Specifies if there should be a counter appended to the pre-release tag. It will increase automatically depending on previous pre-releases for the same version.")
 }

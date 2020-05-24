@@ -3,6 +3,7 @@ package next
 import (
 	"github.com/pkg/errors"
 	"github.com/psanetra/git-semver/conventional_commits"
+	"github.com/psanetra/git-semver/git_utils"
 	"github.com/psanetra/git-semver/latest"
 	"github.com/psanetra/git-semver/logger"
 	"github.com/psanetra/git-semver/semver"
@@ -12,9 +13,10 @@ import (
 )
 
 type NextOptions struct {
-	Workdir           string
-	Stable            bool
-	PreReleaseOptions semver.PreReleaseOptions
+	Workdir            string
+	Stable             bool
+	MajorVersionFilter int
+	PreReleaseOptions  semver.PreReleaseOptions
 }
 
 func Next(options NextOptions) (*semver.Version, error) {
@@ -33,10 +35,16 @@ func Next(options NextOptions) (*semver.Version, error) {
 		return nil, errors.WithMessage(err, "Could not find HEAD")
 	}
 
-	latestReleaseVersion, latestReleaseVersionTag, err := latest.FindLatestVersion(repo, false)
+	latestReleaseVersion, latestReleaseVersionTag, err := latest.FindLatestVersion(repo, options.MajorVersionFilter, false)
 
 	if err != nil {
 		return nil, errors.WithMessage(err, "Error while trying to find latest release version tag")
+	}
+
+	if latestReleaseVersionTag != nil {
+		if err = git_utils.AssertRefIsOnHead(repo, latestReleaseVersionTag, "Latest tag is not on HEAD. This is necessary as the next version is calculated based on the commits since the latest version tag."); err != nil {
+			return nil, err
+		}
 	}
 
 	if latestReleaseVersion == nil {
@@ -44,13 +52,20 @@ func Next(options NextOptions) (*semver.Version, error) {
 	}
 
 	var latestPreReleaseVersion *semver.Version
+	var latestPreReleaseVersionTag *plumbing.Reference
 
 	if options.PreReleaseOptions.ShouldBePreRelease() {
-		latestPreReleaseVersion, _, err = latest.FindLatestVersion(repo, true)
+		latestPreReleaseVersion, latestPreReleaseVersionTag, err = latest.FindLatestVersion(repo, options.MajorVersionFilter, true)
 	}
 
 	if err != nil {
 		return nil, errors.WithMessage(err, "Error while trying to find latest pre-release version tag")
+	}
+
+	if latestPreReleaseVersionTag != nil {
+		if err = git_utils.AssertRefIsOnHead(repo, latestPreReleaseVersionTag, "Latest tag is not on HEAD. This is necessary as the next version is calculated based on the commits since the latest version tag."); err != nil {
+			return nil, err
+		}
 	}
 
 	excludedCommits := make([]plumbing.Hash, 0, 1)

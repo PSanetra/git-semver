@@ -9,6 +9,7 @@ import (
 )
 
 var includePreReleases bool
+var majorVersionFilter int
 
 var Command = cobra.Command{
 	Use:   "latest",
@@ -19,6 +20,7 @@ var Command = cobra.Command{
 		latestVersion, err := latest.Latest(latest.LatestOptions{
 			Workdir:            common_opts.Workdir,
 			IncludePreReleases: includePreReleases,
+			MajorVersionFilter: majorVersionFilter,
 		})
 
 		if err != nil {
@@ -32,4 +34,5 @@ var Command = cobra.Command{
 
 func init() {
 	Command.Flags().BoolVar(&includePreReleases, "include-pre-releases", false, "Also consider pre-releases as the latest version")
+	Command.Flags().IntVar(&majorVersionFilter, "major-version", -1, "Search for the latest version with a specific major version")
 }
