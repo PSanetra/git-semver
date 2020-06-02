@@ -100,3 +100,7 @@ func parsePreReleaseTag(str string) ([]interface{}, error) {
 func (v *Version) IsStable() bool {
 	return v.Major != 0
 }
+
+func (v *Version) IsPreRelease() bool {
+	return len(v.PreReleaseTag) > 0
+}

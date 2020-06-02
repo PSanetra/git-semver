@@ -55,6 +55,28 @@ $ git-semver next --pre-release-tag=alpha --pre-release-counter
 1.2.3-alpha.1
 ```
 
+### log
+
+The `log` command prints the commit log of all commits, which were contained in a specified version or all commits since the latest version if no version is specified.
+
+#### Examples
+
+Print the commits since the latest version.
+```bash
+$ git-semver log v1.0.0
+commit 688dd5f56c839f1d7871dd406b72e0f2f7ec5cf4
+Author: John Doe <john.doe@example.com>
+Date:   Sun May 24 16:41:51 2020 +0200
+
+    fix: Fix some Bug
+
+commit a89b0cc7dc7838cd6c19e733efe6c95fc457cde9
+Author: John Doe <john.doe@example.com>
+Date:   Tue Dec 03 10:00:23 2019 +0100
+
+    feat: Add some feature
+```
+
 ### compare
 
 The `compare` command is an utility command to compare two semantic versions.

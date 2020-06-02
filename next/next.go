@@ -42,7 +42,7 @@ func Next(options NextOptions) (*semver.Version, error) {
 	}
 
 	if latestReleaseVersionTag != nil {
-		if err = git_utils.AssertRefIsOnHead(repo, latestReleaseVersionTag, "Latest tag is not on HEAD. This is necessary as the next version is calculated based on the commits since the latest version tag."); err != nil {
+		if err = git_utils.AssertRefIsReachable(repo, latestReleaseVersionTag, headRef, "Latest tag is not on HEAD. This is necessary as the next version is calculated based on the commits since the latest version tag."); err != nil {
 			return nil, err
 		}
 	}
@@ -63,7 +63,7 @@ func Next(options NextOptions) (*semver.Version, error) {
 	}
 
 	if latestPreReleaseVersionTag != nil {
-		if err = git_utils.AssertRefIsOnHead(repo, latestPreReleaseVersionTag, "Latest tag is not on HEAD. This is necessary as the next version is calculated based on the commits since the latest version tag."); err != nil {
+		if err = git_utils.AssertRefIsReachable(repo, latestPreReleaseVersionTag, headRef, "Latest tag is not on HEAD. This is necessary as the next version is calculated based on the commits since the latest version tag."); err != nil {
 			return nil, err
 		}
 	}

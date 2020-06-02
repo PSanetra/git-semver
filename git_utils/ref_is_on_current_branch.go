@@ -7,14 +7,8 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/revlist"
 )
 
-func AssertRefIsOnHead(repo *git.Repository, ref *plumbing.Reference, message string) error {
-	headRef, err := repo.Head()
-
-	if err != nil {
-		return err
-	}
-
-	headRefList, err := revlist.Objects(
+func AssertRefIsReachable(repo *git.Repository, precedingRef *plumbing.Reference, headRef *plumbing.Reference, message string) error {
+	toRefList, err := revlist.Objects(
 		repo.Storer,
 		[]plumbing.Hash{
 			headRef.Hash(),
@@ -26,10 +20,10 @@ func AssertRefIsOnHead(repo *git.Repository, ref *plumbing.Reference, message st
 		return err
 	}
 
-	refCommitHash := RefToCommitHash(repo.Storer, ref)
+	refCommitHash := RefToCommitHash(repo.Storer, precedingRef)
 
-	if !HashListContains(headRefList, refCommitHash) {
-		return errors.Errorf(message + " (tag: %s; commit: %s)", ref.Name().String(), refCommitHash.String())
+	if !HashListContains(toRefList, refCommitHash) {
+		return errors.Errorf(message + " (tag: %s; commit: %s)", precedingRef.Name().String(), refCommitHash.String())
 	}
 
 	return nil
