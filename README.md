@@ -1,5 +1,5 @@
 # git-semver
-[![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/psanetra/git-semver)](https://hub.docker.com/r/psanetra/git-semver) [![Docker Image Pulls](https://img.shields.io/docker/pulls/psanetra/git-semver)](https://hub.docker.com/r/psanetra/git-semver)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org) [![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/psanetra/git-semver)](https://hub.docker.com/r/psanetra/git-semver) [![Docker Image Pulls](https://img.shields.io/docker/pulls/psanetra/git-semver)](https://hub.docker.com/r/psanetra/git-semver)
 
 git-semver is a command line tool to calculate [semantic versions](https://semver.org/spec/v2.0.0.html) based on the git history and tags of a repository.
 
