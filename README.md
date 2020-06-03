@@ -61,20 +61,58 @@ The `log` command prints the commit log of all commits, which were contained in 
 
 #### Examples
 
-Print the commits since the latest version.
+Print the commits, added in version 1.0.0.
 ```bash
 $ git-semver log v1.0.0
-commit 688dd5f56c839f1d7871dd406b72e0f2f7ec5cf4
+commit 478bb9dfdca43216cda6cedcab27faf5c8fd68c0
 Author: John Doe <john.doe@example.com>
-Date:   Sun May 24 16:41:51 2020 +0200
+Date:   Wed Jun 03 20:17:23 2020 +0000
 
-    fix: Fix some Bug
+    fix: Add fix
 
-commit a89b0cc7dc7838cd6c19e733efe6c95fc457cde9
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc bibendum vulputate sapien vel mattis.
+
+    Vivamus faucibus leo id libero suscipit, varius tincidunt neque interdum. Mauris rutrum at velit vitae semper.
+
+    Fixes: http://issues.example.com/123
+    BREAKING CHANGE: This commit is breaking some API.
+
+commit f716712a4a26491533ba3b6d95e29f9beed85f47
 Author: John Doe <john.doe@example.com>
-Date:   Tue Dec 03 10:00:23 2019 +0100
+Date:   Wed Jun 03 20:17:23 2020 +0000
 
-    feat: Add some feature
+    Some non-conventional-commit
+
+commit d44f505f677d52ca23fb9a69de1f5bb6e6085a74
+Author: John Doe <john.doe@example.com>
+Date:   Wed Jun 03 20:17:22 2020 +0000
+
+    feat: Add feature
+```
+
+Print only conventional commits, formatted as JSON.
+```bash
+$ git-semver log --conventional-commits v1.0.0
+[
+  {
+    "type": "fix",
+    "breaking_change": true,
+    "description": "Add fix",
+    "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc bibendum vulputate sapien vel mattis.\n\nVivamus faucibus leo id libero suscipit, varius tincidunt neque interdum. Mauris rutrum at velit vitae semper.",
+    "footer": {
+      "BREAKING CHANGE": [
+        "This commit is breaking some API."
+      ],
+      "Fixes": [
+        "http://issues.example.com/123"
+      ]
+    }
+  },
+  {
+    "type": "feat",
+    "description": "Add feature"
+  }
+]
 ```
 
 ### compare

@@ -97,7 +97,7 @@ func Next(options NextOptions) (*semver.Version, error) {
 
 	var nextVersion semver.Version
 
-	maxPrioCommitMessage := &conventional_commits.CommitMessage{}
+	maxPrioCommitMessage := &conventional_commits.ConventionalCommitMessage{}
 
 	for _, hash := range historyDiff {
 		commit, err := repo.CommitObject(hash)
@@ -124,7 +124,7 @@ func Next(options NextOptions) (*semver.Version, error) {
 
 		maxPrioCommitMessage = message
 
-		if message.IsBreakingChange() {
+		if message.ContainsBreakingChange {
 			break
 		}
 	}
@@ -145,13 +145,13 @@ func Next(options NextOptions) (*semver.Version, error) {
 
 }
 
-func commitMessageToSemverChange(msg *conventional_commits.CommitMessage) semver.Change {
+func commitMessageToSemverChange(msg *conventional_commits.ConventionalCommitMessage) semver.Change {
 
 	var semverChange semver.Change
 
 	if msg == nil {
 		return semverChange
-	} else if msg.IsBreakingChange() {
+	} else if msg.ContainsBreakingChange {
 		semverChange = semver.BREAKING
 	} else if msg.ChangeType == conventional_commits.FEATURE {
 		semverChange = semver.NEW_FEATURE

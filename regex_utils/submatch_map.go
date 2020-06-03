@@ -12,6 +12,10 @@ func SubmatchMap(regexp *regexp.Regexp, str string) map[string]string {
 		return nil
 	}
 
+	return SubmatchMapFromSubmatches(regexp, submatches)
+}
+
+func SubmatchMapFromSubmatches(regexp *regexp.Regexp, submatches []string) map[string]string {
 	groupNames := regexp.SubexpNames()
 
 	submatchMap := make(map[string]string, len(groupNames))

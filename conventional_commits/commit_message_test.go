@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestParseCommitMessageParsesSimpleCommitMessage(t *testing.T) {
+func TestParseCommitMessage_ParsesSimpleCommitMessage(t *testing.T) {
 
 	commitMessage, err := ParseCommitMessage(`feat: my description`)
 
@@ -13,17 +13,37 @@ func TestParseCommitMessageParsesSimpleCommitMessage(t *testing.T) {
 
 	assert.Equal(
 		t,
-		&CommitMessage{
-			ChangeType:                 "feat",
-			Description:                "my description",
-			HasBreakingChangeIndicator: false,
+		&ConventionalCommitMessage{
+			ChangeType:             "feat",
+			Description:            "my description",
+			ContainsBreakingChange: false,
+			Footer:                 map[string][]string{},
 		},
 		commitMessage,
 	)
 
 }
 
-func TestParseCommitMessageParsesCommitMessageWithBreakingChangeIndicator(t *testing.T) {
+func TestParseCommitMessage_ParsesSimpleCommitMessageWithCaseInsensitiveType(t *testing.T) {
+
+	commitMessage, err := ParseCommitMessage(`fEaT: my description`)
+
+	assert.Nil(t, err)
+
+	assert.Equal(
+		t,
+		&ConventionalCommitMessage{
+			ChangeType:             "feat",
+			Description:            "my description",
+			ContainsBreakingChange: false,
+			Footer:                 map[string][]string{},
+		},
+		commitMessage,
+	)
+
+}
+
+func TestParseCommitMessage_ParsesCommitMessageWithBreakingChangeIndicator(t *testing.T) {
 
 	commitMessage, err := ParseCommitMessage(`feat!: my description`)
 
@@ -31,17 +51,18 @@ func TestParseCommitMessageParsesCommitMessageWithBreakingChangeIndicator(t *tes
 
 	assert.Equal(
 		t,
-		&CommitMessage{
-			ChangeType:                 "feat",
-			Description:                "my description",
-			HasBreakingChangeIndicator: true,
+		&ConventionalCommitMessage{
+			ChangeType:             "feat",
+			Description:            "my description",
+			ContainsBreakingChange: true,
+			Footer:                 map[string][]string{},
 		},
 		commitMessage,
 	)
 
 }
 
-func TestParseCommitMessageParsesCommitMessageWithBreakingChangeIndicatorAfterScope(t *testing.T) {
+func TestParseCommitMessage_ParsesCommitMessageWithBreakingChangeIndicatorAfterScope(t *testing.T) {
 
 	commitMessage, err := ParseCommitMessage(`feat(scope)!: my description`)
 
@@ -49,17 +70,19 @@ func TestParseCommitMessageParsesCommitMessageWithBreakingChangeIndicatorAfterSc
 
 	assert.Equal(
 		t,
-		&CommitMessage{
-			ChangeType:                 "feat",
-			Description:                "my description",
-			HasBreakingChangeIndicator: true,
+		&ConventionalCommitMessage{
+			ChangeType:             "feat",
+			Scope:                  "scope",
+			Description:            "my description",
+			ContainsBreakingChange: true,
+			Footer:                 map[string][]string{},
 		},
 		commitMessage,
 	)
 
 }
 
-func TestParseCommitMessageParsesSimpleCommitMessageWithLineBreak(t *testing.T) {
+func TestParseCommitMessage_ParsesSimpleCommitMessageWithLineBreak(t *testing.T) {
 
 	commitMessage, err := ParseCommitMessage("feat: my description\nwith line break")
 
@@ -67,16 +90,17 @@ func TestParseCommitMessageParsesSimpleCommitMessageWithLineBreak(t *testing.T) 
 
 	assert.Equal(
 		t,
-		&CommitMessage{
+		&ConventionalCommitMessage{
 			ChangeType:  "feat",
 			Description: "my description\nwith line break",
+			Footer: map[string][]string{},
 		},
 		commitMessage,
 	)
 
 }
 
-func TestParseCommitMessageParsesCommitMessageWithBody(t *testing.T) {
+func TestParseCommitMessage_ParsesCommitMessageWithBody(t *testing.T) {
 
 	commitMessage, err := ParseCommitMessage(
 		`
@@ -84,6 +108,8 @@ feat: my description
 with line break
 
 and this is a body
+
+This is still the body
 `,
 	)
 
@@ -91,17 +117,18 @@ and this is a body
 
 	assert.Equal(
 		t,
-		&CommitMessage{
+		&ConventionalCommitMessage{
 			ChangeType:  "feat",
 			Description: "my description\nwith line break",
-			Body:        "and this is a body",
+			Body:        "and this is a body\n\nThis is still the body",
+			Footer: map[string][]string{},
 		},
 		commitMessage,
 	)
 
 }
 
-func TestParseCommitMessageParsesCommitMessageWithFooter(t *testing.T) {
+func TestParseCommitMessage_ParsesCommitMessageWithFooter(t *testing.T) {
 
 	commitMessage, err := ParseCommitMessage(
 		`
@@ -113,8 +140,9 @@ with line break
 
 this is still the body
 
-this is the footer
-with a single line break
+Fix #123
+Fix: http://example.com/123
+Custom-Token: Custom-Token-Value
 `,
 	)
 
@@ -122,146 +150,82 @@ with a single line break
 
 	assert.Equal(
 		t,
-		&CommitMessage{
+		&ConventionalCommitMessage{
 			ChangeType:  "feat",
 			Description: "my description\nwith line break",
 			Body:        "and this is a body\nwith line break\n\nthis is still the body",
-			Footer:      "this is the footer\nwith a single line break",
+			Footer:      map[string][]string {
+				"Fix": {"123", "http://example.com/123"},
+				"Custom-Token": {"Custom-Token-Value"},
+			},
 		},
 		commitMessage,
 	)
 
 }
 
-func TestCommitMessage_IsBreakingChangeReturnsFalseIfNoBreakingChangeDescription(t *testing.T) {
+func TestParseCommitMessage_SetsContainsBreakingChangeToFalseIfBodyContainsBreakingChangeInline(t *testing.T) {
 
-	assert.False(
-		t,
-		(&CommitMessage{
-			Body:   "Body without BREAKING CHANGE description // BREAKING CHANGE:",
-			Footer: "Footer without BREAKING CHANGE description // BREAKING CHANGE:",
-		}).IsBreakingChange(),
-	)
+	result, err := ParseCommitMessage(`feat: Some description
+
+Body without BREAKING CHANGE description // BREAKING CHANGE:`)
+
+	assert.Nil(t, err)
+	assert.False( t, result.ContainsBreakingChange)
 
 }
 
-func TestCommitMessage_IsBreakingChangeReturnsTrueIfBreakingChangeIndicatorExists(t *testing.T) {
+func TestParseCommitMessage_SetsContainsBreakingChangeToTrueIfBreakingChangeIndicatorExists(t *testing.T) {
 
-	assert.True(
-		t,
-		(&CommitMessage{
-			HasBreakingChangeIndicator: true,
-		}).IsBreakingChange(),
-	)
+	result, err := ParseCommitMessage(`feat!: Some description`)
+
+	assert.Nil(t, err)
+	assert.True( t, result.ContainsBreakingChange)
 }
 
-func TestCommitMessage_IsBreakingChangeReturnsTrueIfBreakingChangeDescriptionInBody(t *testing.T) {
+func TestParseCommitMessage_SetsContainsBreakingChangeToFalseIfBreakingChangeDescriptionInBody(t *testing.T) {
 
-	assert.True(
-		t,
-		(&CommitMessage{
-			Body: "BREAKING CHANGE: commit breaks stuff",
-		}).IsBreakingChange(),
-	)
-
-	assert.True(
-		t,
-		(&CommitMessage{
-			Body: "BREAKING CHANGES: commit breaks stuff",
-		}).IsBreakingChange(),
-	)
-
-	assert.True(
-		t,
-		(&CommitMessage{
-			Body: "BREAKING_CHANGE: commit breaks stuff",
-		}).IsBreakingChange(),
-	)
-
-	assert.True(
-		t,
-		(&CommitMessage{
-			Body: "BREAKING_CHANGES: commit breaks stuff",
-		}).IsBreakingChange(),
-	)
-
-	assert.True(
-		t,
-		(&CommitMessage{
-			Body: "BREAKING-CHANGE: commit breaks stuff",
-		}).IsBreakingChange(),
-	)
-
-	assert.True(
-		t,
-		(&CommitMessage{
-			Body: "BREAKING-CHANGES: commit breaks stuff",
-		}).IsBreakingChange(),
-	)
-
-	assert.True(
-		t,
-		(&CommitMessage{
-			Body: `
-Body with breaking change description in second line:
+	testBodies := []string {
+		"BREAKING CHANGE: commit breaks stuff\nsome-text-in-body-to-avoid-parsing-as-footer",
+		"BREAKING CHANGES: commit breaks stuff\nsome-text-in-body-to-avoid-parsing-as-footer",
+		"BREAKING_CHANGE: commit breaks stuff\nsome-text-in-body-to-avoid-parsing-as-footer",
+		"BREAKING_CHANGES: commit breaks stuff\nsome-text-in-body-to-avoid-parsing-as-footer",
+		"BREAKING-CHANGE: commit breaks stuff\nsome-text-in-body-to-avoid-parsing-as-footer",
+		"BREAKING-CHANGES: commit breaks stuff\nsome-text-in-body-to-avoid-parsing-as-footer",
+		`Body with breaking change description in second line:
 BREAKING CHANGE: commit breaks stuff`,
-		}).IsBreakingChange(),
-	)
+	}
+
+	for _, body := range testBodies {
+		result, err := ParseCommitMessage("feat: Some description\n\n" + body)
+
+		assert.Nil(t, err)
+		assert.NotEmpty(t, result.Body)
+		assert.False(t, result.ContainsBreakingChange, "Should not indicate a breaking change: " + body)
+	}
 
 }
 
-func TestCommitMessage_IsBreakingChangeReturnstrueIfBreakingChangeDescriptionInFooter(t *testing.T) {
+func TestParseCommitMessage_SetsContainsBreakingChangeToTrueIfBreakingChangeTokenExistsInFooter(t *testing.T) {
 
-	assert.True(
-		t,
-		(&CommitMessage{
-			Footer: "BREAKING CHANGE: commit breaks stuff",
-		}).IsBreakingChange(),
-	)
+	testBodiesAndFooters := []string {
+		"BREAKING CHANGE: commit breaks stuff",
+		"BREAKING CHANGES: commit breaks stuff",
+		"BREAKING_CHANGE: commit breaks stuff",
+		"BREAKING_CHANGES: commit breaks stuff",
+		"BREAKING-CHANGE: commit breaks stuff",
+		"BREAKING-CHANGES: commit breaks stuff",
+		`This is the body:
 
-	assert.True(
-		t,
-		(&CommitMessage{
-			Footer: "BREAKING CHANGES: commit breaks stuff",
-		}).IsBreakingChange(),
-	)
-
-	assert.True(
-		t,
-		(&CommitMessage{
-			Footer: "BREAKING_CHANGE: commit breaks stuff",
-		}).IsBreakingChange(),
-	)
-
-	assert.True(
-		t,
-		(&CommitMessage{
-			Footer: "BREAKING_CHANGES: commit breaks stuff",
-		}).IsBreakingChange(),
-	)
-
-	assert.True(
-		t,
-		(&CommitMessage{
-			Footer: "BREAKING-CHANGE: commit breaks stuff",
-		}).IsBreakingChange(),
-	)
-
-	assert.True(
-		t,
-		(&CommitMessage{
-			Footer: "BREAKING-CHANGES: commit breaks stuff",
-		}).IsBreakingChange(),
-	)
-
-	assert.True(
-		t,
-		(&CommitMessage{
-			Footer: `
-Footer with breaking change description in second line:
 BREAKING CHANGE: commit breaks stuff`,
-		}).IsBreakingChange(),
-	)
+	}
+
+	for _, bodyAndFooter := range testBodiesAndFooters {
+		result, err := ParseCommitMessage("feat: Some description\n\n" + bodyAndFooter)
+
+		assert.Nil(t, err)
+		assert.True(t, result.ContainsBreakingChange, "Could not parse breaking change indication from: " + bodyAndFooter)
+	}
 
 }
 
@@ -270,11 +234,11 @@ func TestCommitMessage_Compare_should_return_0_if_left_is_breaking_change_and_ri
 	assert.Equal(
 		t,
 		0,
-		(&CommitMessage{
-			HasBreakingChangeIndicator: true,
+		(&ConventionalCommitMessage{
+			ContainsBreakingChange: true,
 		}).Compare(
-			&CommitMessage{
-				HasBreakingChangeIndicator: true,
+			&ConventionalCommitMessage{
+				ContainsBreakingChange: true,
 			},
 		),
 	)
@@ -286,10 +250,10 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_breaking_change_and_ri
 	assert.Equal(
 		t,
 		1,
-		(&CommitMessage{
-			HasBreakingChangeIndicator: true,
+		(&ConventionalCommitMessage{
+			ContainsBreakingChange: true,
 		}).Compare(
-			&CommitMessage{
+			&ConventionalCommitMessage{
 				ChangeType: FEATURE,
 			},
 		),
@@ -298,10 +262,10 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_breaking_change_and_ri
 	assert.Equal(
 		t,
 		1,
-		(&CommitMessage{
-			HasBreakingChangeIndicator: true,
+		(&ConventionalCommitMessage{
+			ContainsBreakingChange: true,
 		}).Compare(
-			&CommitMessage{
+			&ConventionalCommitMessage{
 				ChangeType: FIX,
 			},
 		),
@@ -310,10 +274,10 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_breaking_change_and_ri
 	assert.Equal(
 		t,
 		1,
-		(&CommitMessage{
-			HasBreakingChangeIndicator: true,
+		(&ConventionalCommitMessage{
+			ContainsBreakingChange: true,
 		}).Compare(
-			&CommitMessage{
+			&ConventionalCommitMessage{
 				ChangeType: CHORE,
 			},
 		),
@@ -326,11 +290,11 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_not_breaking_change_bu
 	assert.Equal(
 		t,
 		-1,
-		(&CommitMessage{
+		(&ConventionalCommitMessage{
 			ChangeType: FEATURE,
 		}).Compare(
-			&CommitMessage{
-				HasBreakingChangeIndicator: true,
+			&ConventionalCommitMessage{
+				ContainsBreakingChange: true,
 			},
 		),
 	)
@@ -338,11 +302,11 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_not_breaking_change_bu
 	assert.Equal(
 		t,
 		-1,
-		(&CommitMessage{
+		(&ConventionalCommitMessage{
 			ChangeType: FIX,
 		}).Compare(
-			&CommitMessage{
-				HasBreakingChangeIndicator: true,
+			&ConventionalCommitMessage{
+				ContainsBreakingChange: true,
 			},
 		),
 	)
@@ -350,11 +314,11 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_not_breaking_change_bu
 	assert.Equal(
 		t,
 		-1,
-		(&CommitMessage{
+		(&ConventionalCommitMessage{
 			ChangeType: CHORE,
 		}).Compare(
-			&CommitMessage{
-				HasBreakingChangeIndicator: true,
+			&ConventionalCommitMessage{
+				ContainsBreakingChange: true,
 			},
 		),
 	)
@@ -366,10 +330,10 @@ func TestCommitMessage_Compare_should_return_0_if_left_is_feature_and_right_too(
 	assert.Equal(
 		t,
 		0,
-		(&CommitMessage{
+		(&ConventionalCommitMessage{
 			ChangeType: FEATURE,
 		}).Compare(
-			&CommitMessage{
+			&ConventionalCommitMessage{
 				ChangeType: FEATURE,
 			},
 		),
@@ -382,10 +346,10 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_feature_and_right_is_n
 	assert.Equal(
 		t,
 		1,
-		(&CommitMessage{
+		(&ConventionalCommitMessage{
 			ChangeType: FEATURE,
 		}).Compare(
-			&CommitMessage{
+			&ConventionalCommitMessage{
 				ChangeType: FIX,
 			},
 		),
@@ -394,10 +358,10 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_feature_and_right_is_n
 	assert.Equal(
 		t,
 		1,
-		(&CommitMessage{
+		(&ConventionalCommitMessage{
 			ChangeType: FEATURE,
 		}).Compare(
-			&CommitMessage{
+			&ConventionalCommitMessage{
 				ChangeType: CHORE,
 			},
 		),
@@ -410,10 +374,10 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_not_feature_but_right_
 	assert.Equal(
 		t,
 		-1,
-		(&CommitMessage{
+		(&ConventionalCommitMessage{
 			ChangeType: FIX,
 		}).Compare(
-			&CommitMessage{
+			&ConventionalCommitMessage{
 				ChangeType: FEATURE,
 			},
 		),
@@ -422,10 +386,10 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_not_feature_but_right_
 	assert.Equal(
 		t,
 		-1,
-		(&CommitMessage{
+		(&ConventionalCommitMessage{
 			ChangeType: CHORE,
 		}).Compare(
-			&CommitMessage{
+			&ConventionalCommitMessage{
 				ChangeType: FEATURE,
 			},
 		),
@@ -438,10 +402,10 @@ func TestCommitMessage_Compare_should_return_0_if_left_is_fix_and_right_too(t *t
 	assert.Equal(
 		t,
 		0,
-		(&CommitMessage{
+		(&ConventionalCommitMessage{
 			ChangeType: FIX,
 		}).Compare(
-			&CommitMessage{
+			&ConventionalCommitMessage{
 				ChangeType: FIX,
 			},
 		),
@@ -454,10 +418,10 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_fix_and_right_is_chore
 	assert.Equal(
 		t,
 		1,
-		(&CommitMessage{
+		(&ConventionalCommitMessage{
 			ChangeType: FIX,
 		}).Compare(
-			&CommitMessage{
+			&ConventionalCommitMessage{
 				ChangeType: CHORE,
 			},
 		),
@@ -470,10 +434,10 @@ func TestCommitMessage_Compare_should_return_1_if_left_is_chore_and_right_is_fix
 	assert.Equal(
 		t,
 		-1,
-		(&CommitMessage{
+		(&ConventionalCommitMessage{
 			ChangeType: CHORE,
 		}).Compare(
-			&CommitMessage{
+			&ConventionalCommitMessage{
 				ChangeType: FIX,
 			},
 		),
@@ -486,10 +450,10 @@ func TestCommitMessage_Compare_should_return_0_if_left_is_chore_and_right_is_doc
 	assert.Equal(
 		t,
 		0,
-		(&CommitMessage{
+		(&ConventionalCommitMessage{
 			ChangeType: CHORE,
 		}).Compare(
-			&CommitMessage{
+			&ConventionalCommitMessage{
 				ChangeType: DOCS,
 			},
 		),

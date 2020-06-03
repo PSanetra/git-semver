@@ -1,8 +1,10 @@
 package log
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/psanetra/git-semver/cli/common_opts"
+	"github.com/psanetra/git-semver/conventional_commits"
 	"github.com/psanetra/git-semver/logger"
 	"github.com/psanetra/git-semver/semver"
 	"github.com/psanetra/git-semver/version_log"
@@ -10,11 +12,12 @@ import (
 )
 
 var excludePreReleases bool
+var outputAsConventionalCommits bool
 
 var Command = cobra.Command{
 	Use:   "log [<version>]",
 	Short: "prints the git log for the specified version",
-	Long: "This command prints all commits, which were contained in a specified version or all commits since the latest version if no version is specified.",
+	Long:  "This command prints all commits, which were contained in a specified version or all commits since the latest version if no version is specified.",
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -38,12 +41,36 @@ var Command = cobra.Command{
 			logger.Logger.Fatalln(err)
 		}
 
-		for _, commit := range commits{
-			fmt.Print(commit)
+		if outputAsConventionalCommits {
+			var conventionalCommits []*conventional_commits.ConventionalCommitMessage
+
+			for _, commit := range commits {
+				conventionalCommit, err := conventional_commits.ParseCommitMessage(commit.Message)
+
+				if err != nil {
+					logger.Logger.Debugln(err)
+					continue
+				}
+
+				conventionalCommits = append(conventionalCommits, conventionalCommit)
+			}
+
+			jsonResult, err := json.MarshalIndent(conventionalCommits, "", "  ")
+
+			if err != nil {
+				logger.Logger.Fatalln("Could not marshal json:", err)
+			}
+
+			fmt.Println(string(jsonResult))
+		} else {
+			for _, commit := range commits {
+				fmt.Print(commit)
+			}
 		}
 	},
 }
 
 func init() {
 	Command.Flags().BoolVar(&excludePreReleases, "exclude-pre-releases", false, "Specifies if the log should exclude pre-release commits from the log.")
+	Command.Flags().BoolVar(&outputAsConventionalCommits, "conventional-commits", false, "Print only conventional commits, formatted as JSON. Non-parsable commits are omitted.")
 }

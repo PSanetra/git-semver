@@ -11,6 +11,21 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 public class LogCmdTests {
 
     @Test
+    public void shouldPrintLogFormattedAsUsual() {
+
+        try (var container = new GitSemverContainer()) {
+            container.start();
+
+            container.addNewFileToGit("file.txt");
+            container.gitCommit("feat: Add feature");
+
+            assertThat(container.exec("git", "semver", "log"))
+                .contains("Author: testuser <test@example.com>");
+        }
+
+    }
+
+    @Test
     public void shouldPrintLogWithNoTags() {
 
         try (var container = new GitSemverContainer()) {
@@ -205,6 +220,45 @@ public class LogCmdTests {
                 .doesNotContain("feat: Initial feature, which is contained in v1.0.0")
                 .doesNotContain("feat: v1")
                 .contains("fix: Commit which is only on v2.0.0");
+        }
+
+    }
+
+    @Test
+    public void shouldPrintLogAsConventionalCommits() {
+
+        try (var container = new GitSemverContainer()) {
+            container.start();
+
+            container.addNewFileToGit("file.txt");
+            container.gitCommit("feat: Add feature");
+            container.addNewFileToGit("file2.txt");
+            container.gitCommit("Some non-conventional-commit");
+            container.addNewFileToGit("file3.txt");
+            container.gitCommit("fix: Add fix\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc bibendum vulputate sapien vel mattis.\n\nVivamus faucibus leo id libero suscipit, varius tincidunt neque interdum. Mauris rutrum at velit vitae semper.\n\nFixes: http://issues.example.com/123\nBREAKING CHANGE: This commit is breaking some API.");
+
+            assertThat(container.exec("git", "semver", "log", "--conventional-commits"))
+                .isEqualTo("[\n"
+                    + "  {\n"
+                    + "    \"type\": \"fix\",\n"
+                    + "    \"breaking_change\": true,\n"
+                    + "    \"description\": \"Add fix\",\n"
+                    + "    \"body\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc bibendum vulputate sapien vel mattis.\\n\\nVivamus faucibus leo id libero suscipit, varius tincidunt neque interdum. Mauris rutrum at velit vitae semper.\",\n"
+                    + "    \"footer\": {\n"
+                    + "      \"BREAKING CHANGE\": [\n"
+                    + "        \"This commit is breaking some API.\"\n"
+                    + "      ],\n"
+                    + "      \"Fixes\": [\n"
+                    + "        \"http://issues.example.com/123\"\n"
+                    + "      ]\n"
+                    + "    }\n"
+                    + "  },\n"
+                    + "  {\n"
+                    + "    \"type\": \"feat\",\n"
+                    + "    \"description\": \"Add feature\"\n"
+                    + "  }\n"
+                    + "]\n"
+                );
         }
 
     }

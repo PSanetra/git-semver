@@ -7,20 +7,23 @@ import (
 	"strings"
 )
 
-var messageRegex = regexp.MustCompile(`(?m)^(?P<ChangeType>[a-z]+)(\([^)]*\))?(?P<BCIndicator>!)?:\s*(?P<Description>[^\n]([^\n]|\n[^\n])*)(\n{2,}(?P<BodyAndFooter>(.|\n)*))?$`)
+var messageRegex = regexp.MustCompile(`(?m)^(?P<ChangeType>[a-zA-Z]+)(\((?P<Scope>[^)]*)\))?(?P<BCIndicator>!)?:\s*(?P<Description>[^\n]([^\n]|\n[^\n])*)(?P<BodyAndFooter>\n{2,}(.|\n)*)?$`)
+var footerTokenRegex = regexp.MustCompile(`(?P<Token>[a-zA-Z_\-]+|BREAKING[ _\-]CHANGE(S)?)( \#|: )(?P<Value>[^\n]+)(\n|(\n)?$)`)
+var footerRegex = regexp.MustCompile("\n\n(" + footerTokenRegex.String() + ")+$")
 
-var breakingChangeRegex = regexp.MustCompile("(?m)^BREAKING[ _\\-]CHANGE(S)?:")
+var breakingChangeRegex = regexp.MustCompile("^BREAKING[ _\\-]CHANGE(S)?$")
 
-type CommitMessage struct {
-	ChangeType                 ChangeType
-	HasBreakingChangeIndicator bool
-	Description                string
-	Body                       string
-	Footer                     string
+type ConventionalCommitMessage struct {
+	ChangeType             ChangeType          `json:"type"`
+	Scope                  string              `json:"scope,omitempty"`
+	ContainsBreakingChange bool                `json:"breaking_change,omitempty"`
+	Description            string              `json:"description"`
+	Body                   string              `json:"body,omitempty"`
+	Footer                 map[string][]string `json:"footer,omitempty"`
 }
 
 // inspired by https://www.conventionalcommits.org
-func ParseCommitMessage(message string) (*CommitMessage, error) {
+func ParseCommitMessage(message string) (*ConventionalCommitMessage, error) {
 
 	match := regex_utils.SubmatchMap(messageRegex, message)
 
@@ -30,39 +33,54 @@ func ParseCommitMessage(message string) (*CommitMessage, error) {
 
 	breakingChangeIndicator := match["BCIndicator"]
 
-	bodyAndFooter := trimWhitespace(match["BodyAndFooter"])
-
-	footerSeparatorIndex := strings.LastIndex(bodyAndFooter, "\n\n")
+	bodyAndFooter := match["BodyAndFooter"]
 
 	body := bodyAndFooter
-	footer := ""
+	footer := make(map[string][]string)
 
-	if footerSeparatorIndex >= 0 {
-		body = bodyAndFooter[:footerSeparatorIndex]
-		footer = trimWhitespace(bodyAndFooter[footerSeparatorIndex+2:])
+	var footerIndicies = footerRegex.FindStringIndex(bodyAndFooter)
+
+	if len(footerIndicies) > 0 {
+		body = bodyAndFooter[:footerIndicies[0]]
+
+		for _, submatches := range footerTokenRegex.FindAllStringSubmatch(bodyAndFooter[footerIndicies[0]:], 100) {
+			submatchMap := regex_utils.SubmatchMapFromSubmatches(footerTokenRegex, submatches)
+			token := submatchMap["Token"]
+			tokenValueList := footer[token]
+			footer[token] = append(tokenValueList, submatchMap["Value"])
+		}
+	} else {
+		body = bodyAndFooter
 	}
 
-	return &CommitMessage{
-		ChangeType:                 ChangeType(match["ChangeType"]),
-		HasBreakingChangeIndicator: breakingChangeIndicator == "!",
-		Description:                match["Description"],
-		Body:                       body,
-		Footer:                     footer,
-	}, nil
+	body = trimWhitespace(body)
+
+	commitMessage := &ConventionalCommitMessage{
+		ChangeType:             ChangeType(strings.ToLower(match["ChangeType"])),
+		Scope:                  match["Scope"],
+		ContainsBreakingChange: breakingChangeIndicator == "!",
+		Description:            match["Description"],
+		Body:                   body,
+		Footer:                 footer,
+	}
+
+	commitMessage.ContainsBreakingChange = commitMessage.ContainsBreakingChange || commitMessage.footerHasBreakingChange()
+
+	return commitMessage, nil
 }
 
 func trimWhitespace(str string) string {
 	return strings.Trim(str, " \t\r\n")
 }
 
-func (c *CommitMessage) Compare(other *CommitMessage) int {
-	if c.IsBreakingChange() {
-		if other.IsBreakingChange() {
+func (c *ConventionalCommitMessage) Compare(other *ConventionalCommitMessage) int {
+	if c.ContainsBreakingChange {
+		if other.ContainsBreakingChange {
 			return 0
 		} else {
 			return 1
 		}
-	} else if other.IsBreakingChange() {
+	} else if other.ContainsBreakingChange {
 		return -1
 	}
 
@@ -89,16 +107,12 @@ func (c *CommitMessage) Compare(other *CommitMessage) int {
 	return 0
 }
 
-func (c *CommitMessage) IsBreakingChange() bool {
-	if c.HasBreakingChangeIndicator {
-		return true
+func (c *ConventionalCommitMessage) footerHasBreakingChange() bool {
+	for key, _ := range c.Footer {
+		if breakingChangeRegex.MatchString(key) {
+			return true
+		}
 	}
 
-	containsBreakingChangeDescription := breakingChangeRegex.MatchString(c.Footer)
-
-	if containsBreakingChangeDescription {
-		return true
-	}
-
-	return breakingChangeRegex.MatchString(c.Body)
+	return false
 }
