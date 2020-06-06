@@ -19,7 +19,7 @@ type ConventionalCommitMessage struct {
 	ContainsBreakingChange bool                `json:"breaking_change,omitempty"`
 	Description            string              `json:"description"`
 	Body                   string              `json:"body,omitempty"`
-	Footer                 map[string][]string `json:"footer,omitempty"`
+	Footers                map[string][]string `json:"footers,omitempty"`
 }
 
 // inspired by https://www.conventionalcommits.org
@@ -61,7 +61,7 @@ func ParseCommitMessage(message string) (*ConventionalCommitMessage, error) {
 		ContainsBreakingChange: breakingChangeIndicator == "!",
 		Description:            match["Description"],
 		Body:                   body,
-		Footer:                 footer,
+		Footers:                footer,
 	}
 
 	commitMessage.ContainsBreakingChange = commitMessage.ContainsBreakingChange || commitMessage.footerHasBreakingChange()
@@ -108,11 +108,23 @@ func (c *ConventionalCommitMessage) Compare(other *ConventionalCommitMessage) in
 }
 
 func (c *ConventionalCommitMessage) footerHasBreakingChange() bool {
-	for key, _ := range c.Footer {
+	for key, _ := range c.Footers {
 		if breakingChangeRegex.MatchString(key) {
 			return true
 		}
 	}
 
 	return false
+}
+
+func (c *ConventionalCommitMessage) breakingChangeDescriptions() []string {
+	var ret []string
+
+	for key, value := range c.Footers {
+		if breakingChangeRegex.MatchString(key) {
+			ret = append(ret, value...)
+		}
+	}
+
+	return ret
 }

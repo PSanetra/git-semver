@@ -68,7 +68,7 @@ commit 478bb9dfdca43216cda6cedcab27faf5c8fd68c0
 Author: John Doe <john.doe@example.com>
 Date:   Wed Jun 03 20:17:23 2020 +0000
 
-    fix: Add fix
+    fix(some_component): Add fix
 
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc bibendum vulputate sapien vel mattis.
 
@@ -96,10 +96,11 @@ $ git-semver log --conventional-commits v1.0.0
 [
   {
     "type": "fix",
+    "scope": "some_component",
     "breaking_change": true,
     "description": "Add fix",
     "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc bibendum vulputate sapien vel mattis.\n\nVivamus faucibus leo id libero suscipit, varius tincidunt neque interdum. Mauris rutrum at velit vitae semper.",
-    "footer": {
+    "footers": {
       "BREAKING CHANGE": [
         "This commit is breaking some API."
       ],
@@ -113,6 +114,25 @@ $ git-semver log --conventional-commits v1.0.0
     "description": "Add feature"
   }
 ]
+```
+
+Print changelog formatted as markdown.
+```bash
+$ git-semver log --markdown v1.0.0
+### BREAKING CHANGES
+
+* **some_component** This commit is breaking some API.
+
+### Features
+
+* Add feature
+
+### Bug Fixes
+
+* **some_component** Add fix
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc bibendum vulputate sapien vel mattis.
+
+Vivamus faucibus leo id libero suscipit, varius tincidunt neque interdum. Mauris rutrum at velit vitae semper.
 ```
 
 ### compare

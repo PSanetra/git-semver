@@ -17,7 +17,7 @@ func TestParseCommitMessage_ParsesSimpleCommitMessage(t *testing.T) {
 			ChangeType:             "feat",
 			Description:            "my description",
 			ContainsBreakingChange: false,
-			Footer:                 map[string][]string{},
+			Footers:                map[string][]string{},
 		},
 		commitMessage,
 	)
@@ -36,7 +36,7 @@ func TestParseCommitMessage_ParsesSimpleCommitMessageWithCaseInsensitiveType(t *
 			ChangeType:             "feat",
 			Description:            "my description",
 			ContainsBreakingChange: false,
-			Footer:                 map[string][]string{},
+			Footers:                map[string][]string{},
 		},
 		commitMessage,
 	)
@@ -55,7 +55,7 @@ func TestParseCommitMessage_ParsesCommitMessageWithBreakingChangeIndicator(t *te
 			ChangeType:             "feat",
 			Description:            "my description",
 			ContainsBreakingChange: true,
-			Footer:                 map[string][]string{},
+			Footers:                map[string][]string{},
 		},
 		commitMessage,
 	)
@@ -75,7 +75,7 @@ func TestParseCommitMessage_ParsesCommitMessageWithBreakingChangeIndicatorAfterS
 			Scope:                  "scope",
 			Description:            "my description",
 			ContainsBreakingChange: true,
-			Footer:                 map[string][]string{},
+			Footers:                map[string][]string{},
 		},
 		commitMessage,
 	)
@@ -93,7 +93,7 @@ func TestParseCommitMessage_ParsesSimpleCommitMessageWithLineBreak(t *testing.T)
 		&ConventionalCommitMessage{
 			ChangeType:  "feat",
 			Description: "my description\nwith line break",
-			Footer: map[string][]string{},
+			Footers:     map[string][]string{},
 		},
 		commitMessage,
 	)
@@ -121,7 +121,7 @@ This is still the body
 			ChangeType:  "feat",
 			Description: "my description\nwith line break",
 			Body:        "and this is a body\n\nThis is still the body",
-			Footer: map[string][]string{},
+			Footers:     map[string][]string{},
 		},
 		commitMessage,
 	)
@@ -154,7 +154,7 @@ Custom-Token: Custom-Token-Value
 			ChangeType:  "feat",
 			Description: "my description\nwith line break",
 			Body:        "and this is a body\nwith line break\n\nthis is still the body",
-			Footer:      map[string][]string {
+			Footers:      map[string][]string {
 				"Fix": {"123", "http://example.com/123"},
 				"Custom-Token": {"Custom-Token-Value"},
 			},

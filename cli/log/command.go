@@ -13,6 +13,7 @@ import (
 
 var excludePreReleases bool
 var outputAsConventionalCommits bool
+var markdownChangelog bool
 
 var Command = cobra.Command{
 	Use:   "log [<version>]",
@@ -41,7 +42,14 @@ var Command = cobra.Command{
 			logger.Logger.Fatalln(err)
 		}
 
-		if outputAsConventionalCommits {
+		if !outputAsConventionalCommits && !markdownChangelog {
+			for _, commit := range commits {
+				fmt.Print(commit)
+			}
+		} else if outputAsConventionalCommits && markdownChangelog {
+			logger.Logger.Fatalln("Flags --conventional-commits and --markdown-changelog are mutual exclusive")
+		} else {
+
 			var conventionalCommits []*conventional_commits.ConventionalCommitMessage
 
 			for _, commit := range commits {
@@ -55,16 +63,16 @@ var Command = cobra.Command{
 				conventionalCommits = append(conventionalCommits, conventionalCommit)
 			}
 
-			jsonResult, err := json.MarshalIndent(conventionalCommits, "", "  ")
+			if markdownChangelog {
+				fmt.Print(conventional_commits.ToMarkdown(conventionalCommits))
+			} else if outputAsConventionalCommits {
+				jsonResult, err := json.MarshalIndent(conventionalCommits, "", "  ")
 
-			if err != nil {
-				logger.Logger.Fatalln("Could not marshal json:", err)
-			}
+				if err != nil {
+					logger.Logger.Fatalln("Could not marshal json:", err)
+				}
 
-			fmt.Println(string(jsonResult))
-		} else {
-			for _, commit := range commits {
-				fmt.Print(commit)
+				fmt.Println(string(jsonResult))
 			}
 		}
 	},
@@ -73,4 +81,5 @@ var Command = cobra.Command{
 func init() {
 	Command.Flags().BoolVar(&excludePreReleases, "exclude-pre-releases", false, "Specifies if the log should exclude pre-release commits from the log.")
 	Command.Flags().BoolVar(&outputAsConventionalCommits, "conventional-commits", false, "Print only conventional commits, formatted as JSON. Non-parsable commits are omitted.")
+	Command.Flags().BoolVar(&markdownChangelog, "markdown", false, "Print changelog, formatted as markdown.")
 }

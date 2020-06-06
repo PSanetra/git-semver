@@ -235,16 +235,17 @@ public class LogCmdTests {
             container.addNewFileToGit("file2.txt");
             container.gitCommit("Some non-conventional-commit");
             container.addNewFileToGit("file3.txt");
-            container.gitCommit("fix: Add fix\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc bibendum vulputate sapien vel mattis.\n\nVivamus faucibus leo id libero suscipit, varius tincidunt neque interdum. Mauris rutrum at velit vitae semper.\n\nFixes: http://issues.example.com/123\nBREAKING CHANGE: This commit is breaking some API.");
+            container.gitCommit("fix(some_component): Add fix\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc bibendum vulputate sapien vel mattis.\n\nVivamus faucibus leo id libero suscipit, varius tincidunt neque interdum. Mauris rutrum at velit vitae semper.\n\nFixes: http://issues.example.com/123\nBREAKING CHANGE: This commit is breaking some API.");
 
             assertThat(container.exec("git", "semver", "log", "--conventional-commits"))
                 .isEqualTo("[\n"
                     + "  {\n"
                     + "    \"type\": \"fix\",\n"
+                    + "    \"scope\": \"some_component\",\n"
                     + "    \"breaking_change\": true,\n"
                     + "    \"description\": \"Add fix\",\n"
                     + "    \"body\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc bibendum vulputate sapien vel mattis.\\n\\nVivamus faucibus leo id libero suscipit, varius tincidunt neque interdum. Mauris rutrum at velit vitae semper.\",\n"
-                    + "    \"footer\": {\n"
+                    + "    \"footers\": {\n"
                     + "      \"BREAKING CHANGE\": [\n"
                     + "        \"This commit is breaking some API.\"\n"
                     + "      ],\n"
@@ -258,6 +259,39 @@ public class LogCmdTests {
                     + "    \"description\": \"Add feature\"\n"
                     + "  }\n"
                     + "]\n"
+                );
+        }
+
+    }
+
+    @Test
+    public void shouldPrintLogAsMarkdown() {
+
+        try (var container = new GitSemverContainer()) {
+            container.start();
+
+            container.addNewFileToGit("file.txt");
+            container.gitCommit("feat: Add feature");
+            container.addNewFileToGit("file2.txt");
+            container.gitCommit("Some non-conventional-commit");
+            container.addNewFileToGit("file3.txt");
+            container.gitCommit("fix(some_component): Add fix\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc bibendum vulputate sapien vel mattis.\n\nVivamus faucibus leo id libero suscipit, varius tincidunt neque interdum. Mauris rutrum at velit vitae semper.\n\nFixes: http://issues.example.com/123\nBREAKING CHANGE: This commit is breaking some API.");
+
+            assertThat(container.exec("git", "semver", "log", "--markdown"))
+                .isEqualTo("### BREAKING CHANGES\n"
+                    + "\n"
+                    + "* **some_component** This commit is breaking some API.\n"
+                    + "\n"
+                    + "### Features\n"
+                    + "\n"
+                    + "* Add feature\n"
+                    + "\n"
+                    + "### Bug Fixes\n"
+                    + "\n"
+                    + "* **some_component** Add fix\n"
+                    + "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc bibendum vulputate sapien vel mattis.\n"
+                    + "\n"
+                    + "Vivamus faucibus leo id libero suscipit, varius tincidunt neque interdum. Mauris rutrum at velit vitae semper.\n"
                 );
         }
 
