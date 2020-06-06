@@ -185,9 +185,6 @@ func TestParseCommitMessage_SetsContainsBreakingChangeToTrueIfBreakingChangeIndi
 
 func TestParseCommitMessage_SetsContainsBreakingChangeToFalseIfBreakingChangeDescriptionInBody(t *testing.T) {
 
-	testBody := `Body with breaking change description in second line. Should not match as footer as a blank line is missing:
-BREAKING CHANGE: commit breaks stuff`
-
 		result, err := ParseCommitMessage(`feat: Some description
 
 Body with breaking change description in second line. Should not match as footer as a blank line is missing:
@@ -195,7 +192,7 @@ BREAKING CHANGE: commit breaks stuff`)
 
 		assert.Nil(t, err)
 		assert.NotEmpty(t, result.Body)
-		assert.False(t, result.ContainsBreakingChange, "Should not indicate a breaking change: "+testBody)
+		assert.False(t, result.ContainsBreakingChange, "Should not indicate a breaking change.")
 
 }
 
