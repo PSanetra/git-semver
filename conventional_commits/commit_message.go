@@ -7,9 +7,12 @@ import (
 	"strings"
 )
 
-var messageRegex = regexp.MustCompile(`(?m)^(?P<ChangeType>[a-zA-Z]+)(\((?P<Scope>[^)]*)\))?(?P<BCIndicator>!)?:\s*(?P<Description>[^\n]([^\n]|\n[^\n])*)(?P<BodyAndFooter>\n{2,}(.|\n)*)?$`)
-var footerTokenRegex = regexp.MustCompile(`(?P<Token>[a-zA-Z_\-]+|BREAKING[ _\-]CHANGE(S)?)( \#|: )(?P<Value>[^\n]+)(\n|(\n)?$)`)
-var footerRegex = regexp.MustCompile("\n\n(" + footerTokenRegex.String() + ")+$")
+var messageRegex = regexp.MustCompile(`(?m)^(?P<ChangeType>[a-zA-Z]+)(\((?P<Scope>[^)]*)\))?(?P<BCIndicator>!)?:\s*(?P<Description>[^\n]([^\n]|\n[^\n])*)(?P<BodyAndFooters>\n{2,}(.|\n)*)?$`)
+
+const footerTokenRegexStr = `(?P<Token>[a-zA-Z_\-]+|BREAKING[ _\-]CHANGE(S)?)( \#|: )`
+
+var footerTokenRegex = regexp.MustCompile(`(?m)^` + footerTokenRegexStr)
+var footersBeginningRegex = regexp.MustCompile(`(?m)\n\n` + footerTokenRegexStr)
 
 var breakingChangeRegex = regexp.MustCompile("^BREAKING[ _\\-]CHANGE(S)?$")
 
@@ -33,24 +36,35 @@ func ParseCommitMessage(message string) (*ConventionalCommitMessage, error) {
 
 	breakingChangeIndicator := match["BCIndicator"]
 
-	bodyAndFooter := match["BodyAndFooter"]
+	bodyAndFooters := match["BodyAndFooters"]
 
-	body := bodyAndFooter
-	footer := make(map[string][]string)
+	body := bodyAndFooters
+	footers := make(map[string][]string)
 
-	var footerIndicies = footerRegex.FindStringIndex(bodyAndFooter)
+	var footersBeginningIndex = footersBeginningRegex.FindStringIndex(bodyAndFooters)
 
-	if len(footerIndicies) > 0 {
-		body = bodyAndFooter[:footerIndicies[0]]
+	if len(footersBeginningIndex) > 0 {
+		body = bodyAndFooters[:footersBeginningIndex[0]]
+		footersStr := bodyAndFooters[footersBeginningIndex[0]:]
 
-		for _, submatches := range footerTokenRegex.FindAllStringSubmatch(bodyAndFooter[footerIndicies[0]:], 100) {
-			submatchMap := regex_utils.SubmatchMapFromSubmatches(footerTokenRegex, submatches)
-			token := submatchMap["Token"]
-			tokenValueList := footer[token]
-			footer[token] = append(tokenValueList, submatchMap["Value"])
+		submatches := footerTokenRegex.FindAllStringSubmatchIndex(footersStr, 100)
+
+		for i, submatchIndices := range submatches {
+			token := footersStr[submatchIndices[2*1]:submatchIndices[2*1+1]]
+			tokenValueList := footers[token]
+
+			nextTokenIndex := len(footersStr)
+
+			if i < len(submatches) - 1 {
+				nextTokenIndex = submatches[i+1][0]
+			}
+
+			value := trimWhitespace(footersStr[submatchIndices[1]:nextTokenIndex])
+
+			footers[token] = append(tokenValueList, value)
 		}
 	} else {
-		body = bodyAndFooter
+		body = bodyAndFooters
 	}
 
 	body = trimWhitespace(body)
@@ -61,7 +75,7 @@ func ParseCommitMessage(message string) (*ConventionalCommitMessage, error) {
 		ContainsBreakingChange: breakingChangeIndicator == "!",
 		Description:            match["Description"],
 		Body:                   body,
-		Footers:                footer,
+		Footers:                footers,
 	}
 
 	commitMessage.ContainsBreakingChange = commitMessage.ContainsBreakingChange || commitMessage.footerHasBreakingChange()

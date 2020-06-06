@@ -154,8 +154,8 @@ Custom-Token: Custom-Token-Value
 			ChangeType:  "feat",
 			Description: "my description\nwith line break",
 			Body:        "and this is a body\nwith line break\n\nthis is still the body",
-			Footers:      map[string][]string {
-				"Fix": {"123", "http://example.com/123"},
+			Footers: map[string][]string{
+				"Fix":          {"123", "http://example.com/123"},
 				"Custom-Token": {"Custom-Token-Value"},
 			},
 		},
@@ -168,10 +168,10 @@ func TestParseCommitMessage_SetsContainsBreakingChangeToFalseIfBodyContainsBreak
 
 	result, err := ParseCommitMessage(`feat: Some description
 
-Body without BREAKING CHANGE description // BREAKING CHANGE:`)
+Body without BREAKING CHANGE description // BREAKING CHANGE: not a breaking change description`)
 
 	assert.Nil(t, err)
-	assert.False( t, result.ContainsBreakingChange)
+	assert.False(t, result.ContainsBreakingChange)
 
 }
 
@@ -180,35 +180,28 @@ func TestParseCommitMessage_SetsContainsBreakingChangeToTrueIfBreakingChangeIndi
 	result, err := ParseCommitMessage(`feat!: Some description`)
 
 	assert.Nil(t, err)
-	assert.True( t, result.ContainsBreakingChange)
+	assert.True(t, result.ContainsBreakingChange)
 }
 
 func TestParseCommitMessage_SetsContainsBreakingChangeToFalseIfBreakingChangeDescriptionInBody(t *testing.T) {
 
-	testBodies := []string {
-		"BREAKING CHANGE: commit breaks stuff\nsome-text-in-body-to-avoid-parsing-as-footer",
-		"BREAKING CHANGES: commit breaks stuff\nsome-text-in-body-to-avoid-parsing-as-footer",
-		"BREAKING_CHANGE: commit breaks stuff\nsome-text-in-body-to-avoid-parsing-as-footer",
-		"BREAKING_CHANGES: commit breaks stuff\nsome-text-in-body-to-avoid-parsing-as-footer",
-		"BREAKING-CHANGE: commit breaks stuff\nsome-text-in-body-to-avoid-parsing-as-footer",
-		"BREAKING-CHANGES: commit breaks stuff\nsome-text-in-body-to-avoid-parsing-as-footer",
-		`Body with breaking change description in second line:
-BREAKING CHANGE: commit breaks stuff`,
-	}
+	testBody := `Body with breaking change description in second line. Should not match as footer as a blank line is missing:
+BREAKING CHANGE: commit breaks stuff`
 
-	for _, body := range testBodies {
-		result, err := ParseCommitMessage("feat: Some description\n\n" + body)
+		result, err := ParseCommitMessage(`feat: Some description
+
+Body with breaking change description in second line. Should not match as footer as a blank line is missing:
+BREAKING CHANGE: commit breaks stuff`)
 
 		assert.Nil(t, err)
 		assert.NotEmpty(t, result.Body)
-		assert.False(t, result.ContainsBreakingChange, "Should not indicate a breaking change: " + body)
-	}
+		assert.False(t, result.ContainsBreakingChange, "Should not indicate a breaking change: "+testBody)
 
 }
 
 func TestParseCommitMessage_SetsContainsBreakingChangeToTrueIfBreakingChangeTokenExistsInFooter(t *testing.T) {
 
-	testBodiesAndFooters := []string {
+	testBodiesAndFooters := []string{
 		"BREAKING CHANGE: commit breaks stuff",
 		"BREAKING CHANGES: commit breaks stuff",
 		"BREAKING_CHANGE: commit breaks stuff",
@@ -224,9 +217,31 @@ BREAKING CHANGE: commit breaks stuff`,
 		result, err := ParseCommitMessage("feat: Some description\n\n" + bodyAndFooter)
 
 		assert.Nil(t, err)
-		assert.True(t, result.ContainsBreakingChange, "Could not parse breaking change indication from: " + bodyAndFooter)
+		assert.True(t, result.ContainsBreakingChange, "Could not parse breaking change indication from: "+bodyAndFooter)
 	}
 
+}
+
+func TestParseCommitMessage_ParsesMultilineFooter(t *testing.T) {
+
+	commitMessage := `feat: Some feature
+
+This is the body.
+
+BREAKING CHANGE: commit breaks stuff
+
+This is still part of the breaking change description.
+
+This too
+Some-Tag: This is some other footer`
+
+	result, err := ParseCommitMessage(commitMessage)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "This is the body.", result.Body)
+	assert.Equal(t, []string{"commit breaks stuff\n\nThis is still part of the breaking change description.\n\nThis too"}, result.Footers["BREAKING CHANGE"])
+	assert.Equal(t, []string{"This is some other footer"}, result.Footers["Some-Tag"])
+	assert.True(t, result.ContainsBreakingChange, "Could not parse breaking change indication")
 }
 
 func TestCommitMessage_Compare_should_return_0_if_left_is_breaking_change_and_right_too(t *testing.T) {
