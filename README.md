@@ -159,7 +159,7 @@ $ git-semver compare 1.2.3-alpha 1.2.3-beta
 
 Compare the versions `1.2.3` and `1.2.3+build-2018-12-31`
 ```bash
-$ git-semver compare 1.2.3-alpha 1.2.3+build-2018-12-31
+$ git-semver compare 1.2.3 1.2.3+build-2018-12-31
 =
 ```
 
