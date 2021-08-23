@@ -10,13 +10,6 @@ public class BaseImage {
         .withFileFromPath(".", Paths.get(".."));
 
     public static String getImageName() {
-        String imageName = null;
-        try {
-            imageName = IMAGE.get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-
-        return imageName;
+        return IMAGE.get();
     }
 }
