@@ -124,6 +124,33 @@ public class NextCmdTests {
     }
 
     @Test
+    public void shouldNotReturnErrorCodeIfLatestVersionReachableFromDetachedHEAD() throws IOException, InterruptedException {
+
+        try (var container = new GitSemverContainer()) {
+            container.start();
+
+            container.gitCheckoutNewBranch("master");
+            container.addNewFileToGit("file.txt");
+            container.gitCommit("feat: commit 1");
+            container.gitTag("v1.2.3");
+            container.addNewFileToGit("file_2.txt");
+            container.gitCommit("feat: commit 2");
+            container.addNewFileToGit("file_3.txt");
+            container.gitCommit("feat: commit 3");
+            container.gitCheckout("HEAD~1");
+
+            var result = container.execInContainer("git", "log", "-1");
+            assertThat(result.getStdout()).contains("feat: commit 2");
+
+            result = container.execInContainer("git", "semver", "next");
+
+            assertThat(result.getExitCode()).isEqualTo(0);
+            assertThat(result.getStdout()).contains("1.3.0");
+        }
+
+    }
+
+    @Test
     public void shouldReturnFirstVersionOnRepoWithoutTags() {
 
         try (var container = new GitSemverContainer()) {
