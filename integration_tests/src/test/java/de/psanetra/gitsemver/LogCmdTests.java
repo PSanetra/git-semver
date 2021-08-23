@@ -240,6 +240,10 @@ public class LogCmdTests {
             assertThat(container.exec("git", "semver", "log", "--conventional-commits"))
                 .isEqualTo("[\n"
                     + "  {\n"
+                    + "    \"type\": \"feat\",\n"
+                    + "    \"description\": \"Add feature\"\n"
+                    + "  },\n"
+                    + "  {\n"
                     + "    \"type\": \"fix\",\n"
                     + "    \"scope\": \"some_component\",\n"
                     + "    \"breaking_change\": true,\n"
@@ -253,10 +257,6 @@ public class LogCmdTests {
                     + "        \"http://issues.example.com/123\"\n"
                     + "      ]\n"
                     + "    }\n"
-                    + "  },\n"
-                    + "  {\n"
-                    + "    \"type\": \"feat\",\n"
-                    + "    \"description\": \"Add feature\"\n"
                     + "  }\n"
                     + "]\n"
                 );
