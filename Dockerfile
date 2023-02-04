@@ -1,4 +1,4 @@
-FROM golang:1.19-alpine as build
+FROM golang:1.20-alpine as build
 
 WORKDIR /src
 
@@ -8,7 +8,7 @@ RUN go test -v -vet=off ./...
 
 RUN GOOS=linux GARCH=amd64 go build -o git-semver -ldflags="-s -w" cli/main.go
 
-FROM alpine:3.16
+FROM alpine:3.17
 
 RUN apk --no-cache add git git-lfs openssh-client
 
