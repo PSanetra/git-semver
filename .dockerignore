@@ -1,2 +1,10 @@
 .idea
 /integration_tests
+dist/
+
+.dockerignore
+.gitignore
+.goreleaser.yaml
+Dockerfile
+LICENSE
+README.md
