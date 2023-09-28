@@ -111,7 +111,7 @@ func VersionLog(options VersionLogOptions) ([]*object.Commit, error) {
 		commits = append(commits, commit)
 	}
 
-	sort.Sort(git_utils.ByCommitTimeDesc(commits))
+	sort.Sort(git_utils.ByHistoryDesc(commits))
 
 	// Return most recent commits first
 	return commits, nil
