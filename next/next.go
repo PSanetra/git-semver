@@ -17,6 +17,7 @@ type NextOptions struct {
 	Stable             bool
 	MajorVersionFilter int
 	PreReleaseOptions  semver.PreReleaseOptions
+	IgnoreDetachedHead bool
 }
 
 func Next(options NextOptions) (*semver.Version, error) {
@@ -41,7 +42,7 @@ func Next(options NextOptions) (*semver.Version, error) {
 		return nil, errors.WithMessage(err, "Error while trying to find latest release version tag")
 	}
 
-	if latestReleaseVersionTag != nil {
+	if latestReleaseVersionTag != nil && !options.IgnoreDetachedHead {
 		if err = git_utils.AssertRefIsReachable(repo, latestReleaseVersionTag, headRef, "Latest tag is not on HEAD. This is necessary as the next version is calculated based on the commits since the latest version tag."); err != nil {
 			return nil, err
 		}
