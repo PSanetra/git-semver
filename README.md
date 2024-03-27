@@ -163,6 +163,47 @@ $ git-semver compare 1.2.3 1.2.3+build-2018-12-31
 =
 ```
 
+## Example GitLab Job Template
+
+```yaml
+stages:
+  - tag
+
+tag:
+  image:
+    name: psanetra/git-semver:latest
+    entrypoint:
+      - "/usr/bin/env"
+      - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  stage: tag
+  variables:
+    GIT_DEPTH: 0
+    GIT_FETCH_EXTRA_FLAGS: "--prune --prune-tags --tags"
+  before_script:
+    - apk add --upgrade --no-cache curl
+  script: |
+    set -ex
+    LATEST_VERSION="$(git semver latest)"
+    NEXT_VERSION="$(git semver next)"
+    if [ "${LATEST_VERSION}" != "${NEXT_VERSION}" ]; then
+      NEXT_TAG="v${NEXT_VERSION}"
+      git tag "${NEXT_TAG}"
+      CHANGELOG="$(git semver log --markdown ${NEXT_TAG})"
+      curl -X POST \
+        --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --form "tag_name=v${NEXT_VERSION}" \
+        --form "ref=${CI_COMMIT_SHA}" \
+        --form "description=${CHANGELOG}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/releases"
+    fi
+  only:
+    - main
+    - master
+  except:
+    - tags
+    - schedules
+```
+
 ## License
 
 MIT
