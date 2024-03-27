@@ -1,8 +1,8 @@
 package git_utils
 
 import (
+	"github.com/go-git/go-git/v5"
 	"github.com/psanetra/git-semver/semver"
-	"gopkg.in/src-d/go-git.v4"
 	"io"
 )
 

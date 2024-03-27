@@ -1,6 +1,6 @@
 package git_utils
 
-import "gopkg.in/src-d/go-git.v4/plumbing/object"
+import "github.com/go-git/go-git/v5/plumbing/object"
 
 type ByHistoryDesc []*object.Commit
 

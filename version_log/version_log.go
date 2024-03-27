@@ -1,15 +1,15 @@
 package version_log
 
 import (
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/revlist"
 	"github.com/pkg/errors"
 	"github.com/psanetra/git-semver/git_utils"
 	"github.com/psanetra/git-semver/latest"
 	"github.com/psanetra/git-semver/logger"
 	"github.com/psanetra/git-semver/semver"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"gopkg.in/src-d/go-git.v4/plumbing/revlist"
 	"sort"
 )
 

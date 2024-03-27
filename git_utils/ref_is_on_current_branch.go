@@ -1,10 +1,10 @@
 package git_utils
 
 import (
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/revlist"
 	"github.com/pkg/errors"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/revlist"
 )
 
 func AssertRefIsReachable(repo *git.Repository, precedingRef *plumbing.Reference, headRef *plumbing.Reference, message string) error {
@@ -23,7 +23,7 @@ func AssertRefIsReachable(repo *git.Repository, precedingRef *plumbing.Reference
 	refCommitHash := RefToCommitHash(repo.Storer, precedingRef)
 
 	if !HashListContains(toRefList, refCommitHash) {
-		return errors.Errorf(message + " (tag: %s; commit: %s)", precedingRef.Name().String(), refCommitHash.String())
+		return errors.Errorf(message+" (tag: %s; commit: %s)", precedingRef.Name().String(), refCommitHash.String())
 	}
 
 	return nil
