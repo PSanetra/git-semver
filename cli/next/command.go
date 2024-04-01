@@ -21,8 +21,9 @@ var Command = cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		nextVersion, err := next.Next(next.NextOptions{
-			Workdir: common_opts.Workdir,
-			Stable:  stable,
+			Workdir:            common_opts.Workdir,
+			IgnoreDetachedHead: common_opts.IgnoreDetachedHead,
+			Stable:             stable,
 			MajorVersionFilter: majorVersionFilter,
 			PreReleaseOptions: semver.PreReleaseOptions{
 				Label:         preReleaseTag,
@@ -44,4 +45,5 @@ func init() {
 	Command.Flags().IntVar(&majorVersionFilter, "major-version", -1, "Only consider tags with this specific major version.")
 	Command.Flags().StringVar(&preReleaseTag, "pre-release-tag", "", "Specifies a pre-release tag which should be appended to the next version.")
 	Command.Flags().BoolVar(&appendPreReleaseCounter, "pre-release-counter", false, "Specifies if there should be a counter appended to the pre-release tag. It will increase automatically depending on previous pre-releases for the same version.")
+
 }
