@@ -1,0 +1,75 @@
+name: Release
+on:
+  workflow_run:
+    workflows: ["Tests"]
+    branches: ["master", "main"]
+    types:
+      - completed
+permissions:
+  contents: write
+jobs:
+  version:
+    name: Gather version information
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      latest_version: ${{ steps.latest_version.outputs.version }}
+      next_version: ${{ steps.next_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Latest version
+        id: latest_version
+        uses: PSanetra/git-semver-actions/latest@master
+      - name: Next version
+        id: next_version
+        uses: PSanetra/git-semver-actions/next@master
+  draft_release:
+    name: Release
+    needs: version
+    if: ${{ needs.version.outputs.latest_version != needs.version.outputs.next_version }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Generate Changelog
+        id: generate_changelog
+        uses: PSanetra/git-semver-actions/markdown-log@master
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.version.outputs.next_version }}
+          release_name: Release ${{ needs.version.outputs.next_version }}
+          body: |
+            ${{ steps.generate_changelog.outputs.changelog }}
+          draft: false # Tag must be published before gitreleaser is executed
+          prerelease: false
+  build_and_publish_artifacts:
+    name: Build and publish artifacts
+    needs: [version, draft_release]
+    if: ${{ needs.version.outputs.latest_version != needs.version.outputs.next_version }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        name: Login to Docker Hub
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
