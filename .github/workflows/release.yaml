@@ -25,7 +25,7 @@ jobs:
       - name: Next version
         id: next_version
         uses: PSanetra/git-semver-actions/next@master
-  draft_release:
+  release:
     name: Release
     needs: version
     if: ${{ needs.version.outputs.latest_version != needs.version.outputs.next_version }}
@@ -51,7 +51,7 @@ jobs:
           prerelease: false
   build_and_publish_artifacts:
     name: Build and publish artifacts
-    needs: [version, draft_release]
+    needs: [version, release]
     if: ${{ needs.version.outputs.latest_version != needs.version.outputs.next_version }}
     runs-on: ubuntu-latest
     steps:
