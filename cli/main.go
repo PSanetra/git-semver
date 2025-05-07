@@ -42,6 +42,7 @@ func main() {
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&common_opts.Workdir, "workdir", "w", ".", "Working directory to use")
 	rootCmd.PersistentFlags().String("log-level", logger.DEFAULT_LOG_LEVEL.String(), "panic | fatal | error | warn | info | debug | trace")
+	rootCmd.PersistentFlags().BoolVar(&common_opts.IgnoreDetachedHead, "ignore-detached-head", false, "Specifies to ignore detached head errors")
 }
 
 func processLogLevelFlag(cmd *cobra.Command) {
